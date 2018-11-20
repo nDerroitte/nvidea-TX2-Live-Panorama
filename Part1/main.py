@@ -1,30 +1,25 @@
 import cv2
 import json
 import sys
+import operator
+
 import numpy as np
 
 from angle import *
 from panorama import *
+from jetson_cam import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
 FRAME_NB_BTW_PANO = 50
-RESOLUTION = (640,480)
-#RESOLUTION = (1280,720)
+#RESOLUTION = (640,480)
+RESOLUTION = (1280,720)
 
 def get_cam_matrix(filename):
     json_data = open(filename).read()
 
     data = json.loads(json_data)
     return np.array(data["Camera Matrix"])
-
-def open_cam_onboard(width, height):
-    pass
-
-def open_window(name, width = None, height = None):
-    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-    if width != None and height != None:
-        cv2.resizeWindow(name, width, height)
 
 if __name__ == "__main__":
     if(len(sys.argv) == 3):
@@ -51,23 +46,24 @@ if __name__ == "__main__":
 
         cap = cv2.VideoCapture(video_filename)
     else:
-        print("Error: python3.6 Motion_Detection.py cam_matrix_filename mode=" + str(IMPLEMENTED_MODE) + " [video_filename]")
+        print("Error: python3.6 main.py cam_matrix_filename mode=" + str(IMPLEMENTED_MODE) + " [video_filename]")
         exit(-1)
 
     ret = False
     frame = None
+    
     relative_angle = [0.0, 0.0, 0.0]
     panorama = None
     panorama_angle = 0
     nb_frame = FRAME_NB_BTW_PANO
+
     cam_matrix[0][0] = 300
     scaling_factor = cam_matrix[0][0] #Scaling Factor equal to focal length
 
     PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
 
     while(cap.isOpened()):
-        prec_ret = ret
-        prec_frame = frame
+        prec_ret, prec_frame = (ret,frame)
         ret, frame = cap.read()
 
         if ret is True:
@@ -80,22 +76,23 @@ if __name__ == "__main__":
             panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
 
         if prec_ret is True and ret is True:
-            homo_matrix = get_homography_matrix(prec_frame, frame, True)
 
-            retval, rotation_matrix,trans_matrix, normals = get_decomposed_homo_matrix(homo_matrix, cam_matrix)
-
-            angle = get_degree_angle(get_euler_angle(rotation_matrix[0]))
-            relative_angle = list(map(operator.add, relative_angle,angle))
 
             if(mode == "panorama"):
+                angle = get_angle(prec_frame, frame, cam_matrix)
                 if(nb_frame > 0):
                     nb_frame = nb_frame - 1;
                 else:
-                    panorama = get_panorama("cylindrical",panorama,frame.copy(), cam_matrix, scaling_factor, angle)
+                    panorama = get_panorama("cylindrical",panorama,frame.copy(), cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
                     nb_frame = FRAME_NB_BTW_PANO
-                open_window("Panorama")
-                cv2.imshow("Panorama", panorama)
 
+                    open_window("Panorama")
+                    cv2.imshow("Panorama", panorama)
+
+            elif(mode == "matching_demo"):
+                angle = get_angle(prec_frame, frame, cam_matrix, True)
+
+            relative_angle = list(map(operator.add, relative_angle,angle))
             cv2.putText(frame, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0, 255))
 
         if ret is True:
