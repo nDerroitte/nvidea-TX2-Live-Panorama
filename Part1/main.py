@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
 
         if(mode == "panorama"):
-            key = cv2.waitKey(10) & 0xFF
+            key = cv2.waitKey(1) & 0xFF
         elif(mode == "matching_demo"):
             key = cv2.waitKey(20) & 0xFF
 
