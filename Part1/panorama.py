@@ -49,10 +49,10 @@ def cylindricalWarpImages(img1,img2,cam_matrix, scaling_factor, resolution, proj
     transfo = get_affine_transfo(warp2,img1)
 
     if transfo is not None:
-        transfor[0][0] = 1
-        transfor[0][1] = 0
-        transfor[1][0] = 0
-        transfor[1][1] = 1
+        transfo[0][0] = 1
+        transfo[0][1] = 0
+        transfo[1][0] = 0
+        transfo[1][1] = 1
         
         cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1],img1.shape[0]))
 

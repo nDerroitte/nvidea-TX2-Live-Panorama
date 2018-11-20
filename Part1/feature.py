@@ -10,7 +10,6 @@ FEATURE_DETECTOR = "orb"
 #FEATURE_DETECTOR = "sift"
 #FEATURE_DETECTOR = "surf"
 
-
 def match_images(img1, img2, display):
     if MATCHING_METHOD == 'bruteforce':
         return bruteforce_matching(img1, img2, display)

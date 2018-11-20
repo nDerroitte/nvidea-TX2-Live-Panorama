@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from feature import *
 
-
 def get_homography_matrix(img1, img2, display = False):
     matches, kp1, kp2 = match_images(img1, img2, display)
     homo_matrix = get_transfo("homography",matches,kp1,kp2)
