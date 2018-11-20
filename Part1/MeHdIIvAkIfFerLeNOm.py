@@ -40,4 +40,4 @@ def frameReadingFromImage(folder_name):
 if __name__ == "__main__":
     folder_name = "Capture/"
     list = frameReadingFromImage(folder_name)
-    print(list)
+    #print(list)
