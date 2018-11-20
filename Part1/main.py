@@ -11,7 +11,7 @@ from jetson_cam import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
-FRAME_NB_BTW_PANO = 50
+FRAME_NB_BTW_PANO = 10
 #RESOLUTION = (640,480)
 RESOLUTION = (1280,720)
 
@@ -51,13 +51,12 @@ if __name__ == "__main__":
 
     ret = False
     frame = None
-    
+
     relative_angle = [0.0, 0.0, 0.0]
     panorama = None
     panorama_angle = 0
     nb_frame = FRAME_NB_BTW_PANO
 
-    cam_matrix[0][0] = 300
     scaling_factor = cam_matrix[0][0] #Scaling Factor equal to focal length
 
     PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
@@ -68,8 +67,7 @@ if __name__ == "__main__":
 
         if ret is True:
             cv2.resize(frame, RESOLUTION)
-
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         if panorama is None:
             #panorama = frame
@@ -88,16 +86,14 @@ if __name__ == "__main__":
 
                     open_window("Panorama")
                     cv2.imshow("Panorama", panorama)
+                    #cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
 
             elif(mode == "matching_demo"):
                 angle = get_angle(prec_frame, frame, cam_matrix, True)
 
             relative_angle = list(map(operator.add, relative_angle,angle))
-            cv2.putText(frame, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0, 255))
 
-        if ret is True:
-            open_window("Frame")
-            cv2.imshow("Frame", frame)
+
 
         if(mode == "panorama"):
             key = cv2.waitKey(10) & 0xFF
