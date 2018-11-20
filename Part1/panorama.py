@@ -19,7 +19,6 @@ def compute_projection_matrix(cam_matrix, scaling_factor, resolution):
     return proj_mat
 
 def get_panorama(method,panorama,frame, cam_matrix, scaling_factor, angle):
-    
     if(method == "cylindrical"):
         return cylindricalWarpImages(panorama,frame, cam_matrix, scaling_factor, angle)
     else:

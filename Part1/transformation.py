@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
-
-from feature import *
+import feature
 
 def get_homography_matrix(img1, img2, display = False):
     matches, kp1, kp2 = match_images(img1, img2, display)
