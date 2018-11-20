@@ -12,7 +12,7 @@ from reader import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
-FRAME_NB_BTW_PANO = 10
+FRAME_NB_BTW_PANO = 50
 #RESOLUTION = (640,480)
 RESOLUTION = (1280,720)
 
@@ -65,6 +65,8 @@ def video_panorama(cap,cam_matrix, video_dirname):
 
     PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
 
+    rec_pos = (0,0)
+
     if(len(cap) > 0):
         frame = cap.pop()
     else:
@@ -84,11 +86,13 @@ def video_panorama(cap,cam_matrix, video_dirname):
         if(nb_frame > 0):
             nb_frame = nb_frame - 1;
         else:
-            panorama = get_panorama("cylindrical",panorama,frame.copy(), cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+            panorama, translation = get_panorama("cylindrical",panorama,frame.copy(), cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
             nb_frame = FRAME_NB_BTW_PANO
 
             panorama_to_display = cv2.cvtColor(panorama.copy(), cv2.COLOR_GRAY2BGR)
-            cv2.rectangle(panorama_to_display,(15,25),(200,150),(0,0,255),15)
+
+            rec_pos = (int(translation),0)
+            cv2.rectangle(panorama_to_display,rec_pos,(RESOLUTION[0]+rec_pos[0],RESOLUTION[1] + rec_pos[1]),(0,0,255),10)
 
             open_window("Panorama")
             cv2.imshow("Panorama", panorama_to_display)
@@ -112,13 +116,13 @@ def video_panorama(cap,cam_matrix, video_dirname):
             nb_frame = FRAME_NB_BTW_PANO
             cap = frameReadingFromImage(video_dirname)
 
-    cv2.destroyAllWindows()
-
     if panorama is not None:
         print("Panorama Saved")
         cv2.imwrite(("Panorama_" + str(video_dirname) + ".jpg") ,panorama)
     else:
         print("Error: The panorama has not been computed.")
+
+    cv2.destroyAllWindows()
 
 def live_matching_demo(cap,cam_matrix):
     ret = False
