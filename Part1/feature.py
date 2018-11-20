@@ -1,6 +1,5 @@
 import cv2
 
-
 #MATCHING_METHOD = "bruteforce"
 MATCHING_METHOD = "flann"
 

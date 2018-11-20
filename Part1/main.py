@@ -9,8 +9,8 @@ from panorama import *
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
 FRAME_NB_BTW_PANO = 50
-RESOLUTION = (640,480)
-#RESOLUTION = (1280,720)
+#RESOLUTION = (640,480)
+RESOLUTION = (1280,720)
 
 def get_cam_matrix(filename):
     json_data = open(filename).read()
