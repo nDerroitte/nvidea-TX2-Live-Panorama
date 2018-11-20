@@ -115,6 +115,7 @@ def video_panorama(cap,cam_matrix, video_dirname):
     cv2.destroyAllWindows()
 
     if panorama is not None:
+        print("Panorama Saved")
         cv2.imwrite(("Panorama_" + str(video_dirname) + ".jpg") ,panorama)
     else:
         print("Error: The panorama has not been computed.")
