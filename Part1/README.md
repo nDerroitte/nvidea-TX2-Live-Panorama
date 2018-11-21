@@ -54,8 +54,8 @@ python3 main.py CAMERA_MATRIX.json {panorama, matching_demo} [FOLDER PATH]
     * `r` Restart display.
     * `q` Quit.
 * `FOLDER_PATH`: Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
-  * While using the panorama feature in live mode, the user should press `s`to start the panorama and repress `s`. It can also press `q` to quit at anytime.
-  * While using the matching_demo feature in live, the user input does not change from the non-live mode.
+  * While using the panorama feature in live mode, the user should press `s`to start the panorama and repress `s`. He can also press `q` to quit at anytime.
+  * While using the matching_demo feature in live, the user can only press `s` to show the features and repress it the remove them.  He can also press `q` to quit at anytime. 
 
 Note that only the 2 first arguments are mandatory. Not giving a 3rd argument puts the algortihm in live mode. 
 
