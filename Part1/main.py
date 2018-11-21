@@ -13,8 +13,10 @@ from reader import *
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
 FRAME_NB_BTW_PANO = 50
-#RESOLUTION = (640,480)
 RESOLUTION = (1280,720)
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+FRAME_RATE = 30
 
 def get_cam_matrix(filename):
     json_data = open(filename).read()
@@ -97,15 +99,12 @@ def video_panorama(cap,cam_matrix, video_dirname):
                 del(frame_buffer[0])
 
             frame_buffer.append(frame)
-
-            print(len(frame_buffer))
         else:
-            curr_frame = frame.copy()- 1
+            curr_frame = frame.copy()
             tmp = curr_frame
 
             while(len(frame_buffer) > 0):
                 panorama, translation = get_panorama("cylindrical",panorama,tmp, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
-
                 if translation is None:
                     tmp = frame_buffer.pop()
                 else:
@@ -236,8 +235,32 @@ def live_panorama(cap,cam_matrix, video_dirname):
             angle = get_angle(prec_frame, frame, cam_matrix)
             if(nb_frame > 0):
                 nb_frame = nb_frame - 1;
+
+                if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
+                    del(frame_buffer[0])
+
+                frame_buffer.append(frame)
             else:
-                panorama = get_panorama("cylindrical",panorama,frame.copy(), cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+                curr_frame = frame.copy()
+                tmp = curr_frame
+
+                while(len(frame_buffer) > 0):
+                    panorama, translation = get_panorama("cylindrical",panorama,tmp, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+                    if translation is None:
+                        tmp = frame_buffer.pop()
+                    else:
+                        break
+
+                if(len(frame_buffer) == 0):
+                    print("Error : The panorama can't be made on this Video Sequence (not enough matches could be made).")
+                    exit(-1)
+
+                if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
+                    del(frame_buffer[0])
+                else:
+                    FRAME_NB_BTW_PANO = FRAME_NB_BTW_PANO/2
+
+                frame_buffer.append(frame)
                 nb_frame = FRAME_NB_BTW_PANO
 
                 open_window("Panorama")
@@ -258,12 +281,8 @@ def live_panorama(cap,cam_matrix, video_dirname):
     cap.release()
     cv2.destroyAllWindows()
 
-
 if __name__ == "__main__":
-    global FRAME_NB_BTW_PANO
-    global PROJECTION_MATRICE
-    global RESOLUTION
-    
+
     live = False
     if(len(sys.argv) == 3):
         cmatrix_filename = sys.argv[1]
@@ -276,8 +295,7 @@ if __name__ == "__main__":
         live = True
         print("Live Motion_Detection is Not Implemented Yet")
         exit(-1)
-        #cap = cv2.VideoCapture(-1)
-        #cap = open_cam_onboard(width, height)
+        cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
     elif(len(sys.argv) == 4):
         cmatrix_filename = sys.argv[1]
         cam_matrix = get_cam_matrix(cmatrix_filename)
