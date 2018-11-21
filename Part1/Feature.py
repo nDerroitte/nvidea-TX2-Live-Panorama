@@ -1,8 +1,9 @@
 import cv2
+from JetsonCam import *
 
-from jetson_cam import *
-
-
+###############################################################################
+#                                  Constants                                  #
+###############################################################################
 #MATCHING_METHOD = "bruteforce"
 MATCHING_METHOD = "flann"
 
@@ -10,7 +11,13 @@ FEATURE_DETECTOR = "orb"
 #FEATURE_DETECTOR = "sift"
 #FEATURE_DETECTOR = "surf"
 
+###############################################################################
+#                                  Fonctions                                  #
+###############################################################################
 def match_images(img1, img2, display):
+    """
+    Find the matches between 2 images
+    """
     global MATCHING_METHOD
 
     if MATCHING_METHOD == 'bruteforce':
@@ -21,20 +28,21 @@ def match_images(img1, img2, display):
         print("Error : Unknown Feature Matching Method : " + method + ".")
         exit(-1)
 
-#It will find the best matches as it will try combinaison of all
 def bruteforce_matching(img1, img2, display, method = 'default'):
+    """
+    Brute force matching :
+    It will find the best matches as it will try combinaison of all
+
+    """
     global FEATURE_DETECTOR
-    #TO TUNE
     feature_detector = get_feature_detector(FEATURE_DETECTOR)
 
     #We find the keypoints(features) and descriptors
     key_points1, descriptors1 = feature_detector.detectAndCompute(img1, None)
     key_points2, descriptors2 = feature_detector.detectAndCompute(img2, None)
 
-    #TO TUNE
     # Match descriptors.
     if method == 'default':
-        #TO TUNE
         # create BFMatcher object with distance measurements NORM_HAMMING --> Brute Force
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         img3 = None
@@ -47,7 +55,6 @@ def bruteforce_matching(img1, img2, display, method = 'default'):
             img3 = cv2.drawMatches(img1,key_points1,img2,key_points2,good_to_display,img3, flags=2)
 
     elif method == 'knn':
-        #TO TUNE
         # create BFMatcher object with distance measurements NORM_HAMMING --> Brute Force
         # crosscheck is an alternative to the Ratio Test --> can't use knnMatch with crosscheck
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
@@ -80,39 +87,34 @@ def bruteforce_matching(img1, img2, display, method = 'default'):
 
     return matches, key_points1, key_points2
 
-#It will find an approximate nearest neighbor --> It will find a good matching, but not necessarily the best possible one.
 def flann_matching(img1, img2, display, method = "orb"):
+    """
+    Flann matching : ill find an approximate nearest neighbor
+    It will find a good matching, but not necessarily the best possible one.
+    """
     global FEATURE_DETECTOR
-
-    #TO TUNE
     feature_detector = get_feature_detector(FEATURE_DETECTOR)
 
     #We find the keypoints(features) and descriptors
     key_points1, descriptors1 = feature_detector.detectAndCompute(img1, None)
     key_points2, descriptors2 = feature_detector.detectAndCompute(img2, None)
 
-    #TO TUNE
     # FLANN parameters
     FLANN_INDEX_KDTREE = 0
     FLANN_INDEX_LSH = 6
 
-    #TO TUNE
     if method == "orb":
         index_params= dict(algorithm = FLANN_INDEX_LSH,
-                table_number = 6, # 12
+                table_number = 6,
                 key_size = 12,
-                # 20
-                multi_probe_level = 1) #2
-        #Specify the numbe rof times the treees should be recursively traversed
+                multi_probe_level = 1)
+        #Specify the number of times the trees should be recursively traversed
     elif method == "sift" or method == "surf":
         index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
         # or pass empty dictionary
 
-    #TO TUNE
     search_params = dict(checks=50)
-
     flann = cv2.FlannBasedMatcher(index_params,search_params)
-    #TO TUNE
     matches = flann.knnMatch(descriptors1,descriptors2,k=2)
 
     # ratio test --> See D.Lowe's paper
@@ -138,6 +140,9 @@ def flann_matching(img1, img2, display, method = "orb"):
     return matches, key_points1, key_points2
 
 def get_feature_detector(method):
+    """
+    Get the feature detector of the method chosen
+    """
     if method == "orb":
         return cv2.ORB_create()
     elif method == "sift":

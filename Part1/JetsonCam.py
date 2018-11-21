@@ -1,5 +1,8 @@
 import cv2
 
+###############################################################################
+#                                  Fonctions                                  #
+###############################################################################
 def open_cam_onboard(width, height, resolution, frame_rate):
     """
     Function generating the VideoCapture with the arguments corresponding to the
@@ -16,6 +19,9 @@ def open_cam_onboard(width, height, resolution, frame_rate):
     return cv2.VideoCapture(gst_str, cv2.CAP_GSTREAMER)
 
 def open_window(name, width = None, height = None):
+    """
+    Windows handling
+    """
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     if width != None and height != None:
         cv2.resizeWindow(name, width, height)

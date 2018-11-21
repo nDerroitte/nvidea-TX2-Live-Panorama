@@ -1,10 +1,9 @@
 import cv2
 import numpy as np
 
-from transformation import *
+from Transformation import *
 
 def compute_projection_matrix(cam_matrix, scaling_factor, resolution):
-    #SOURCE = http://pages.cs.wisc.edu/~dyer/cs534/hw/hw4/cylindrical.pdf
     focal_length = (cam_matrix[0][0], cam_matrix[1][1])
 
     w,h = resolution
@@ -51,7 +50,7 @@ def cylindricalWarpImages(img1,img2,cam_matrix, scaling_factor, resolution, proj
         transfo[1][1] = 1
         transfo[1][2] = 0
 
-        cyl_warp = cv2.warpAffine(warp2, transfo, (warp2.shape[1] + abs(int(transfo[0][2])),warp2.shape[0]))
+        cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
 
         #img1 = img1.reshape(cyl_warp.shape)
         #output = cv2.addWeighted(img1, 1, cyl_warp, 1, 0)

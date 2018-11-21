@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from feature import *
+from Feature import *
 
 ###############################################################################
 #                                  Fonctions                                  #
