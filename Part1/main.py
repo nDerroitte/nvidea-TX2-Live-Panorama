@@ -184,17 +184,15 @@ def live_matching_demo(cap,cam_matrix):
 
         if ret is True:
             cv2.resize(frame, RESOLUTION)
+            open_window("Live")
+            cv2.imshow("Live", frame)
 
-        if panorama is None:
-            panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
-
-        if prec_ret is True and ret is True and start_live is True:
-            angle = get_angle(prec_frame, frame, cam_matrix, True)
-
+        if prec_ret is True and ret is True:
+            angle = get_angle(prec_frame, frame, cam_matrix, start_live)
             relative_angle = list(map(operator.add, relative_angle,angle))
-            #cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
+            cv2.putText(frame, ("angle:" + str(relative_angle[1])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
 
-        key = cv2.waitKey(20) & 0xFF
+        key = cv2.waitKey(1) & 0xFF
 
         if key == ord("q"):
             break
@@ -205,11 +203,6 @@ def live_matching_demo(cap,cam_matrix):
                     break
         elif key == ord("s"):
             start_live = not start_live
-        elif key == ord("r"):
-            ret = False
-            relative_angle = [0.0, 0.0, 0.0]
-            cap.release()
-            cap = cv2.VideoCapture(video_filename)
 
     cap.release()
     cv2.destroyAllWindows()
