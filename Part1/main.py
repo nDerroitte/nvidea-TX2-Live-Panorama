@@ -28,6 +28,7 @@ def video_matching_demo(cap,cam_matrix):
     global FRAME_NB_BTW_PANO
     global PROJECTION_MATRICE
 
+    cap2 = cap.copy()
     relative_angle = [0.0, 0.0, 0.0]
 
     if(len(cap) > 0):
@@ -43,7 +44,7 @@ def video_matching_demo(cap,cam_matrix):
 
         angle = get_angle(prec_frame, frame, cam_matrix, True)
         relative_angle = list(map(operator.add, relative_angle,angle))
-        cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
+        cv2.putText(frame, ("angle:" + str(relative_angle[1])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
 
         key = cv2.waitKey(20) & 0xFF
 
@@ -55,9 +56,14 @@ def video_matching_demo(cap,cam_matrix):
                 if(key == ord("p")):
                     break
         elif key == ord("r"):
-            frame = None
+            cap = cap2.copy()
+            if(len(cap) > 0):
+                frame = cap.pop()
+            else:
+                print("Error: 0 frame in the video mentionned.")
+                exit(-1)
+
             relative_angle = [0.0, 0.0, 0.0]
-            cap = frameReadingFromImage(video_dirname)
 
     cv2.destroyAllWindows()
 
