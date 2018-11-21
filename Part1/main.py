@@ -6,7 +6,7 @@ import operator
 import numpy as np
 
 from Angle import *
-from panorama import *
+from Panorama import *
 from JetsonCam import *
 from Reader import *
 
@@ -304,6 +304,7 @@ def live_panorama(cap,cam_matrix):
                         print("Panorama Saved")
                 else:
                     print("Error: The panorama has not been computed.")
+                cv2.destroyWindow("Panorama")
             start_pano = not start_pano
 
     cap.release()
