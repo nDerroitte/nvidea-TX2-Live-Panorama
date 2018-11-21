@@ -43,7 +43,7 @@ def video_matching_demo(cap,cam_matrix):
 
         angle = get_angle(prec_frame, frame, cam_matrix, True)
         relative_angle = list(map(operator.add, relative_angle,angle))
-        #cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
+        cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
 
         key = cv2.waitKey(20) & 0xFF
 
@@ -90,8 +90,6 @@ def video_panorama(cap,cam_matrix, video_dirname):
         if panorama is None:
             panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
 
-        angle = get_angle(prec_frame, frame, cam_matrix)
-
         if(nb_frame > 0):
             nb_frame = nb_frame - 1;
 
@@ -99,6 +97,8 @@ def video_panorama(cap,cam_matrix, video_dirname):
                 del(frame_buffer[0])
 
             frame_buffer.append(frame)
+            angle = get_angle(prec_frame, frame, cam_matrix)
+            relative_angle = list(map(operator.add, relative_angle,angle))
         else:
             curr_frame = frame.copy()
             tmp = curr_frame
@@ -108,6 +108,8 @@ def video_panorama(cap,cam_matrix, video_dirname):
                 if translation is None:
                     tmp = frame_buffer.pop()
                 else:
+                    angle = get_angle(prec_frame, tmp, cam_matrix)
+                    relative_angle = list(map(operator.add, relative_angle,angle))
                     break
 
             if(len(frame_buffer) == 0):
@@ -126,11 +128,10 @@ def video_panorama(cap,cam_matrix, video_dirname):
 
             rec_pos = (int(translation),0)
             cv2.rectangle(panorama_to_display,rec_pos,(RESOLUTION[0]+rec_pos[0],RESOLUTION[1] + rec_pos[1]),(0,0,255),10)
+            cv2.putText(panorama_to_display, ("angle:" + str(relative_angle[1])), (rec_pos[0], rec_pos[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0, 255))
 
             open_window("Panorama")
             cv2.imshow("Panorama", panorama_to_display)
-            #cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
-        relative_angle = list(map(operator.add, relative_angle,angle))
 
 
         key = cv2.waitKey(10) & 0xFF
@@ -207,7 +208,7 @@ def live_matching_demo(cap,cam_matrix):
     cap.release()
     cv2.destroyAllWindows()
 
-def live_panorama(cap,cam_matrix, video_dirname):
+def live_panorama(cap,cam_matrix):
     global PROJECTION_MATRICE
     global FRAME_NB_BTW_PANO
 
@@ -231,11 +232,14 @@ def live_panorama(cap,cam_matrix, video_dirname):
         if ret is True:
             cv2.resize(frame, RESOLUTION)
 
+            if not start_pano:
+                open_window("Live")
+                cv2.imshow("Live", frame)
+
         if panorama is None and start_pano is True:
             panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
 
         if prec_ret is True and ret is True and start_pano is True:
-            angle = get_angle(prec_frame, frame, cam_matrix)
             if(nb_frame > 0):
                 nb_frame = nb_frame - 1;
 
@@ -243,6 +247,8 @@ def live_panorama(cap,cam_matrix, video_dirname):
                     del(frame_buffer[0])
 
                 frame_buffer.append(frame)
+                angle = get_angle(prec_frame, frame, cam_matrix)
+                relative_angle = list(map(operator.add, relative_angle,angle))
             else:
                 curr_frame = frame.copy()
                 tmp = curr_frame
@@ -252,6 +258,8 @@ def live_panorama(cap,cam_matrix, video_dirname):
                     if translation is None:
                         tmp = frame_buffer.pop()
                     else:
+                        angle = get_angle(prec_frame, tmp, cam_matrix)
+                        relative_angle = list(map(operator.add, relative_angle,angle))
                         break
 
                 if(len(frame_buffer) == 0):
@@ -266,11 +274,14 @@ def live_panorama(cap,cam_matrix, video_dirname):
                 frame_buffer.append(frame)
                 nb_frame = FRAME_NB_BTW_PANO
 
-                open_window("Panorama")
-                cv2.imshow("Panorama", panorama)
-                #cv2.putText(panorama, ("x-angle:" + str(relative_angle[0]) + " - y-angle:" + str(relative_angle[1]) + " - z-angle:" + str(relative_angle[2])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
+                panorama_to_display = cv2.cvtColor(panorama.copy(), cv2.COLOR_GRAY2BGR)
 
-            relative_angle = list(map(operator.add, relative_angle,angle))
+                rec_pos = (int(translation),0)
+                cv2.rectangle(panorama_to_display,rec_pos,(RESOLUTION[0]+rec_pos[0],RESOLUTION[1] + rec_pos[1]),(0,0,255),10)
+                cv2.putText(panorama_to_display, ("angle:" + str(relative_angle[1])), (rec_pos[0], rec_pos[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0, 255))
+
+                open_window("Panorama")
+                cv2.imshow("Panorama", panorama_to_display)
 
         key = cv2.waitKey(10) & 0xFF
 
@@ -303,9 +314,10 @@ if __name__ == "__main__":
             print("Error: Implemented modes are " + str(IMPLEMENTED_MODE) + ".")
             exit(-1)
         live = True
-        print("Live Motion_Detection is Not Implemented Yet")
-        exit(-1)
-        cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
+        #print("Live Motion_Detection is Not Implemented Yet")
+        #exit(-1)
+        cap = cv2.VideoCapture(0)
+        #cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
     elif(len(sys.argv) == 4):
         cmatrix_filename = sys.argv[1]
         cam_matrix = get_cam_matrix(cmatrix_filename)
