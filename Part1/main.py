@@ -5,10 +5,10 @@ import operator
 
 import numpy as np
 
-from angle import *
+from Angle import *
 from panorama import *
-from jetson_cam import *
-from reader import *
+from JetsonCam import *
+from Reader import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
@@ -150,8 +150,11 @@ def video_panorama(cap,cam_matrix, video_dirname):
             cap = frameReadingFromImage(video_dirname)
 
     if panorama is not None:
-        print("Panorama Saved")
-        cv2.imwrite(("Panorama_" + str(video_dirname) + ".jpg") ,panorama)
+        ret = cv2.imwrite(("Panorama.jpg") ,panorama)
+        if ret is False:
+            print("Error: Fail to save the Panorama.")
+        else:
+            print("Panorama Saved")
     else:
         print("Error: The panorama has not been computed.")
 
@@ -275,7 +278,14 @@ def live_panorama(cap,cam_matrix, video_dirname):
             break
         elif key == ord("s"):
             if start_pano is True:
-                cv2.imwrite(("Panorama_" + str(video_dirname) + ".jpg") ,panorama)
+                if panorama is not None:
+                    ret = cv2.imwrite(("Panorama.jpg") ,panorama)
+                    if ret is False:
+                        print("Error: Fail to save the Panorama.")
+                    else:
+                        print("Panorama Saved")
+                else:
+                    print("Error: The panorama has not been computed.")
             start_pano = not start_pano
 
     cap.release()
