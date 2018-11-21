@@ -23,6 +23,9 @@ def get_cam_matrix(filename):
     return np.array(data["Camera Matrix"])
 
 def video_matching_demo(cap,cam_matrix):
+    global FRAME_NB_BTW_PANO
+    global PROJECTION_MATRICE
+
     relative_angle = [0.0, 0.0, 0.0]
 
     if(len(cap) > 0):
@@ -57,6 +60,9 @@ def video_matching_demo(cap,cam_matrix):
     cv2.destroyAllWindows()
 
 def video_panorama(cap,cam_matrix, video_dirname):
+    global FRAME_NB_BTW_PANO
+    global PROJECTION_MATRICE
+
     relative_angle = [0.0, 0.0, 0.0]
     panorama = None
     nb_frame = FRAME_NB_BTW_PANO
@@ -66,6 +72,7 @@ def video_panorama(cap,cam_matrix, video_dirname):
     PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
 
     rec_pos = (0,0)
+    frame_buffer = list()
 
     if(len(cap) > 0):
         frame = cap.pop()
@@ -85,8 +92,35 @@ def video_panorama(cap,cam_matrix, video_dirname):
 
         if(nb_frame > 0):
             nb_frame = nb_frame - 1;
+
+            if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
+                del(frame_buffer[0])
+
+            frame_buffer.append(frame)
+
+            print(len(frame_buffer))
         else:
-            panorama, translation = get_panorama("cylindrical",panorama,frame.copy(), cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+            curr_frame = frame.copy()- 1
+            tmp = curr_frame
+
+            while(len(frame_buffer) > 0):
+                panorama, translation = get_panorama("cylindrical",panorama,tmp, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+
+                if translation is None:
+                    tmp = frame_buffer.pop()
+                else:
+                    break
+
+            if(len(frame_buffer) == 0):
+                print("Error : The panorama can't be made on this Video Sequence (not enough matches could be made).")
+                exit(-1)
+
+            if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
+                del(frame_buffer[0])
+            else:
+                FRAME_NB_BTW_PANO = FRAME_NB_BTW_PANO/2
+
+            frame_buffer.append(frame)
             nb_frame = FRAME_NB_BTW_PANO
 
             panorama_to_display = cv2.cvtColor(panorama.copy(), cv2.COLOR_GRAY2BGR)
@@ -125,6 +159,9 @@ def video_panorama(cap,cam_matrix, video_dirname):
     cv2.destroyAllWindows()
 
 def live_matching_demo(cap,cam_matrix):
+    global FRAME_NB_BTW_PANO
+    global PROJECTION_MATRICE
+
     ret = False
     frame = None
 
@@ -169,6 +206,9 @@ def live_matching_demo(cap,cam_matrix):
     cv2.destroyAllWindows()
 
 def live_panorama(cap,cam_matrix, video_dirname):
+    global PROJECTION_MATRICE
+    global FRAME_NB_BTW_PANO
+
     ret = False
     frame = None
 
@@ -220,6 +260,10 @@ def live_panorama(cap,cam_matrix, video_dirname):
 
 
 if __name__ == "__main__":
+    global FRAME_NB_BTW_PANO
+    global PROJECTION_MATRICE
+    global RESOLUTION
+    
     live = False
     if(len(sys.argv) == 3):
         cmatrix_filename = sys.argv[1]

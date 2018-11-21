@@ -11,6 +11,8 @@ FEATURE_DETECTOR = "orb"
 #FEATURE_DETECTOR = "surf"
 
 def match_images(img1, img2, display):
+    global MATCHING_METHOD
+
     if MATCHING_METHOD == 'bruteforce':
         return bruteforce_matching(img1, img2, display)
     elif MATCHING_METHOD == 'flann':
@@ -21,6 +23,7 @@ def match_images(img1, img2, display):
 
 #It will find the best matches as it will try combinaison of all
 def bruteforce_matching(img1, img2, display, method = 'default'):
+    global FEATURE_DETECTOR
     #TO TUNE
     feature_detector = get_feature_detector(FEATURE_DETECTOR)
 
@@ -79,6 +82,8 @@ def bruteforce_matching(img1, img2, display, method = 'default'):
 
 #It will find an approximate nearest neighbor --> It will find a good matching, but not necessarily the best possible one.
 def flann_matching(img1, img2, display, method = "orb"):
+    global FEATURE_DETECTOR
+
     #TO TUNE
     feature_detector = get_feature_detector(FEATURE_DETECTOR)
 
