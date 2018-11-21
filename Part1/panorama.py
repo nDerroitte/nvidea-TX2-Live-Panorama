@@ -4,6 +4,7 @@ import numpy as np
 from transformation import *
 
 def compute_projection_matrix(cam_matrix, scaling_factor, resolution):
+    #SOURCE = http://pages.cs.wisc.edu/~dyer/cs534/hw/hw4/cylindrical.pdf
     focal_length = (cam_matrix[0][0], cam_matrix[1][1])
 
     w,h = resolution
@@ -26,7 +27,6 @@ def get_panorama(method,panorama,frame, cam_matrix, scaling_factor, resolution, 
         print("Error : Unknown or Unimplemented panorama method " + method + ".")
 
 def get_cylindrical(img, cam_matrix, scaling_factor,resolution, projection_matrice):
-    #SOURCE = http://pages.cs.wisc.edu/~dyer/cs534/hw/hw4/cylindrical.pdf
     cyl_proj = np.zeros_like(img)
     w,h = resolution
 

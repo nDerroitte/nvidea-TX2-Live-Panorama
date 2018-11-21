@@ -253,7 +253,7 @@ if __name__ == "__main__":
             exit(-1)
 
     else:
-        print("Error: python3.6 main.py cam_matrix_filename mode=" + str(IMPLEMENTED_MODE) + " [video_filename]")
+        print("Error: python3.6 main.py cam_matrix_filename.json mode=" + str(IMPLEMENTED_MODE) + " [video_dirname]")
         exit(-1)
 
     if live is True and mode == "panorama":
