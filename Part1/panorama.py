@@ -53,7 +53,6 @@ def cylindricalWarpImages(img1,img2,cam_matrix, scaling_factor, resolution, proj
         cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
 
         #img1 = img1.reshape(cyl_warp.shape)
-
         #output = cv2.addWeighted(img1, 1, cyl_warp, 1, 0)
 
         output = np.zeros_like(cyl_warp)
@@ -64,6 +63,7 @@ def cylindricalWarpImages(img1,img2,cam_matrix, scaling_factor, resolution, proj
         output[a] = img1[a]
         output[b] = cyl_warp[b]
 
+        
         output = cv2.fastNlMeansDenoising(output)
 
         return output, transfo[0][2]
