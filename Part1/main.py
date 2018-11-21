@@ -40,7 +40,7 @@ def video_matching_demo(cap,cam_matrix):
     while(len(cap) > 0):
         prec_frame = frame
         frame = cap.pop()
-        cv2.resize(frame, RESOLUTION)
+        frame = cv2.resize(frame, RESOLUTION)
 
         angle = get_angle(prec_frame, frame, cam_matrix, True)
         relative_angle = list(map(operator.add, relative_angle,angle))
@@ -91,7 +91,7 @@ def video_panorama(cap,cam_matrix, video_dirname):
     while(len(cap) > 0):
         prec_frame = frame
         frame = cap.pop()
-        cv2.resize(frame, RESOLUTION)
+        frame = cv2.resize(frame, RESOLUTION)
 
         if panorama is None:
             panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
@@ -157,6 +157,7 @@ def video_panorama(cap,cam_matrix, video_dirname):
             cap = frameReadingFromImage(video_dirname)
 
     if panorama is not None:
+        panorama = cv2.cvtColor(panorama, cv2.COLOR_GRAY2BGR)
         ret = cv2.imwrite(("Panorama.jpg") ,panorama)
         if ret is False:
             print("Error: Fail to save the Panorama.")
@@ -183,7 +184,7 @@ def live_matching_demo(cap,cam_matrix):
         ret, frame = cap.read()
 
         if ret is True:
-            cv2.resize(frame, RESOLUTION)
+            frame = cv2.resize(frame, RESOLUTION)
             open_window("Live")
             cv2.imshow("Live", frame)
 
@@ -223,29 +224,33 @@ def live_panorama(cap,cam_matrix):
     PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
 
     start_pano = False
+    rec_pos = (0,0)
+    frame_buffer = list()
 
     while(cap.isOpened()):
         prec_ret, prec_frame = (ret,frame)
         ret, frame = cap.read()
 
         if ret is True:
-            cv2.resize(frame, RESOLUTION)
+            frame = cv2.resize(frame, RESOLUTION)
 
             if not start_pano:
                 open_window("Live")
                 cv2.imshow("Live", frame)
 
-        if panorama is None and start_pano is True:
-            panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+            if panorama is None and start_pano is True:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                panorama = get_cylindrical(gray, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
 
         if prec_ret is True and ret is True and start_pano is True:
+
             if(nb_frame > 0):
                 nb_frame = nb_frame - 1;
 
                 if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
                     del(frame_buffer[0])
-
                 frame_buffer.append(frame)
+
                 angle = get_angle(prec_frame, frame, cam_matrix)
                 relative_angle = list(map(operator.add, relative_angle,angle))
             else:
@@ -253,7 +258,9 @@ def live_panorama(cap,cam_matrix):
                 tmp = curr_frame
 
                 while(len(frame_buffer) > 0):
-                    panorama, translation = get_panorama("cylindrical",panorama,tmp, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+                    tmp2 = cv2.cvtColor(tmp, cv2.COLOR_BGR2GRAY)
+                    panorama, translation = get_panorama("cylindrical",panorama,tmp2, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+
                     if translation is None:
                         tmp = frame_buffer.pop()
                     else:
@@ -289,6 +296,7 @@ def live_panorama(cap,cam_matrix):
         elif key == ord("s"):
             if start_pano is True:
                 if panorama is not None:
+                    panorama = cv2.cvtColor(panorama, cv2.COLOR_GRAY2BGR)
                     ret = cv2.imwrite(("Panorama.jpg") ,panorama)
                     if ret is False:
                         print("Error: Fail to save the Panorama.")

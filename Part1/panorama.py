@@ -27,7 +27,7 @@ def get_panorama(method,panorama,frame, cam_matrix, scaling_factor, resolution, 
 
 def get_cylindrical(img, cam_matrix, scaling_factor,resolution, projection_matrice):
     cyl_proj = np.zeros_like(img)
-    w,h = resolution
+    h,w = img.shape
 
     for y in range(h):
         for x in range(w):
