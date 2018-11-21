@@ -12,11 +12,11 @@ from Reader import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
-FRAME_NB_BTW_PANO = 50
+FRAME_NB_BTW_PANO = 10
 RESOLUTION = (1280,720)
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-FRAME_RATE = 30
+FRAME_RATE = 25
 
 def get_cam_matrix(filename):
     json_data = open(filename).read()

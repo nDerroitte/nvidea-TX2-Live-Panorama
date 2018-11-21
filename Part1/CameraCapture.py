@@ -77,6 +77,7 @@ def record_frame(video_sequence_nb, frame_buffer, ref):
                 result = cv2.imwrite((current_video_path + "/ref_" + str(GROUP_NUMBER) + "_" + str(video_sequence_nb) + "_" + str(index) + ".jpg"),frame)
         else:
                 result = cv2.imwrite((current_video_path + "/img_" + str(GROUP_NUMBER) + "_" + str(video_sequence_nb) + "_" + str(index) + ".jpg"),frame)
+
         if ret is True:
             if result is False:
                 print("Fail to Save the Image.\n")
