@@ -46,7 +46,7 @@ def video_matching_demo(cap,cam_matrix):
         relative_angle = list(map(operator.add, relative_angle,angle))
         cv2.putText(frame, ("angle:" + str(relative_angle[1])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
 
-        key = cv2.waitKey(20) & 0xFF
+        key = cv2.waitKey(10) & 0xFF
 
         if key == ord("q"):
             break
@@ -140,7 +140,7 @@ def video_panorama(cap,cam_matrix, video_dirname):
             cv2.imshow("Panorama", panorama_to_display)
 
 
-        key = cv2.waitKey(10) & 0xFF
+        key = cv2.waitKey(5) & 0xFF
 
         if key == ord("q"):
             break
@@ -204,6 +204,8 @@ def live_matching_demo(cap,cam_matrix):
                     break
         elif key == ord("s"):
             start_live = not start_live
+            if start_live is False:
+                cv2.destroyWindow("Feature Matcher - orb Flanner")
 
     cap.release()
     cv2.destroyAllWindows()

@@ -62,7 +62,7 @@ def cylindricalWarpImages(img1,img2,cam_matrix, scaling_factor, resolution, proj
 
         output[a] = img1[a]
         output[b] = cyl_warp[b]
-
+        output = output[0:warp2.shape[0],0:(warp2.shape[1]+ abs(int(transfo[0][2])))]
 
         output = cv2.fastNlMeansDenoising(output)
 
