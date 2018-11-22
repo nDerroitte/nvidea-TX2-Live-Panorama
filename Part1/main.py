@@ -287,6 +287,6 @@ if __name__ == "__main__":
     elif live is True and mode == "matching_demo":
         live_matching_demo(cap,cam_matrix)
     elif live is False and mode == "panorama":
-        video_panorama(cap,cam_matrix,video_dirname)
+        video_panorama(cap,cam_matrix)
     elif live is False and mode == "matching_demo":
         video_matching_demo(cap,cam_matrix)
