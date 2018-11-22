@@ -52,8 +52,6 @@ def get_cylindrical(img, cam_matrix, scaling_factor,resolution, projection_matri
 
     cyl_proj = autocrop(cyl_proj)
 
-    imwrite("Cyl_Proj.jpg",cyl_proj)
-
     return cyl_proj
 
 def cylindricalWarpImages(img1,img2,img3,prec_trans,cam_matrix, scaling_factor, resolution, projection_matrice):
