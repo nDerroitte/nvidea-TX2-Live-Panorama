@@ -68,9 +68,11 @@ def video_matching_demo(cap,cam_matrix):
 
     cv2.destroyAllWindows()
 
-def video_panorama(cap,cam_matrix, video_dirname):
+def video_panorama(cap,cam_matrix):
     global FRAME_NB_BTW_PANO
     global PROJECTION_MATRICE
+
+    init = cap
 
     focal_length = cam_matrix[0][0]
     scaling_factor = focal_length #Scaling Factor equal to focal length
@@ -158,7 +160,7 @@ def video_panorama(cap,cam_matrix, video_dirname):
             relative_angle = [0.0, 0.0, 0.0]
             panorama = None
             nb_frame = FRAME_NB_BTW_PANO
-            cap = frameReadingFromImage(video_dirname)
+            cap = init
 
     if panorama is not None:
         panorama = cv2.cvtColor(panorama, cv2.COLOR_GRAY2BGR)
@@ -214,82 +216,19 @@ def live_panorama(cap,cam_matrix):
     global PROJECTION_MATRICE
     global FRAME_NB_BTW_PANO
 
-    ret = False
-    frame = None
-
-    relative_angle = [0.0, 0.0, 0.0]
-    panorama = None
-    nb_frame = FRAME_NB_BTW_PANO
-
-    scaling_factor = cam_matrix[0][0] #Scaling Factor equal to focal length
-
-    PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
-
-    start_pano = False
-    rec_pos = (0,0)
     frame_buffer = list()
+    start_pano = False
 
     while(cap.isOpened()):
-        prec_ret, prec_frame = (ret,frame)
         ret, frame = cap.read()
+        frame = cv2.resize(frame, RESOLUTION)
 
         if ret is True:
-            frame = cv2.resize(frame, RESOLUTION)
+            open_window("Live")
+            cv2.imshow("Live", frame)
 
-            if not start_pano:
-                open_window("Live")
-                cv2.imshow("Live", frame)
-
-            if panorama is None and start_pano is True:
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                panorama = get_cylindrical(gray, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
-
-        if prec_ret is True and ret is True and start_pano is True:
-
-            if(nb_frame > 0):
-                nb_frame = nb_frame - 1;
-
-                if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
-                    del(frame_buffer[0])
+            if start_pano is True:
                 frame_buffer.append(frame)
-
-                angle = get_angle(prec_frame, frame, cam_matrix)
-                relative_angle = list(map(operator.add, relative_angle,angle))
-            else:
-                curr_frame = frame.copy()
-                tmp = curr_frame
-
-                while(len(frame_buffer) > 0):
-                    tmp2 = cv2.cvtColor(tmp, cv2.COLOR_BGR2GRAY)
-                    panorama, translation = get_panorama("cylindrical",panorama,tmp2, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
-
-                    if translation is None:
-                        tmp = frame_buffer.pop()
-                    else:
-                        angle = get_angle(prec_frame, tmp, cam_matrix)
-                        relative_angle = list(map(operator.add, relative_angle,angle))
-                        break
-
-                if(len(frame_buffer) == 0):
-                    print("Error : The panorama can't be made on this Video Sequence (not enough matches could be made).")
-                    exit(-1)
-
-                if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
-                    del(frame_buffer[0])
-                else:
-                    FRAME_NB_BTW_PANO = FRAME_NB_BTW_PANO/2
-
-                frame_buffer.append(frame)
-                nb_frame = FRAME_NB_BTW_PANO
-
-                panorama_to_display = cv2.cvtColor(panorama.copy(), cv2.COLOR_GRAY2BGR)
-
-                rec_pos = (int(translation),0)
-                cv2.rectangle(panorama_to_display,rec_pos,(RESOLUTION[0]+rec_pos[0],RESOLUTION[1] + rec_pos[1]),(0,0,255),10)
-                cv2.putText(panorama_to_display, ("angle:" + str(relative_angle[1])), (rec_pos[0], rec_pos[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0, 255))
-
-                open_window("Panorama")
-                cv2.imshow("Panorama", panorama_to_display)
 
         key = cv2.waitKey(10) & 0xFF
 
@@ -298,16 +237,7 @@ def live_panorama(cap,cam_matrix):
             break
         elif key == ord("s"):
             if start_pano is True:
-                if panorama is not None:
-                    panorama = cv2.cvtColor(panorama, cv2.COLOR_GRAY2BGR)
-                    ret = cv2.imwrite(("Panorama.jpg") ,panorama)
-                    if ret is False:
-                        print("Error: Fail to save the Panorama.")
-                    else:
-                        print("Panorama Saved")
-                else:
-                    print("Error: The panorama has not been computed.")
-                cv2.destroyWindow("Panorama")
+                video_panorama(frame_buffer,cam_matrix)
             start_pano = not start_pano
 
     cap.release()
@@ -327,8 +257,8 @@ if __name__ == "__main__":
         live = True
         #print("Live Motion_Detection is Not Implemented Yet")
         #exit(-1)
-        #cap = cv2.VideoCapture(0)
-        cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
+        cap = cv2.VideoCapture(0)
+        #cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
 
     elif(len(sys.argv) == 4):
         cmatrix_filename = sys.argv[1]
