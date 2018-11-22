@@ -242,6 +242,7 @@ def live_panorama(cap,cam_matrix):
             break
         elif key == ord("s"):
             if start_pano is True:
+                print("Panorama being computed ...")
                 video_panorama(frame_buffer,cam_matrix)
             start_pano = not start_pano
 
