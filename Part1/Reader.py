@@ -35,7 +35,7 @@ def frameReadingFromImage(folder_name):
     images_names.sort(key = natural_keys)
     #Writing frame, one for each jgp image.
     for image in images_names:
-        list_frame.append(cv2.imread(image,0))
+        list_frame.append(cv2.imread(image))
 
     list_frame.reverse()
 

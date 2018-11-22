@@ -41,7 +41,7 @@ def get_transfo(method,matches,key_points1,key_points2):
     # Parameter to stop computing. Terminaison condition
     MAX_RANSAC_REPROJ_ERROR = 5.0
 
-    if len(matches)>MIN_MATCH:
+    if len(matches)>= MIN_MATCH:
         src_pts = list()
         dst_pts = list()
 

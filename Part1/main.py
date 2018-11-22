@@ -12,7 +12,7 @@ from Reader import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo"]
-FRAME_NB_BTW_PANO = 10
+FRAME_NB_BTW_PANO = 20
 RESOLUTION = (1280,720)
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -49,6 +49,7 @@ def video_matching_demo(cap,cam_matrix):
         key = cv2.waitKey(10) & 0xFF
 
         if key == ord("q"):
+            print("You quit.")
             break
         elif key == ord("p"):
             while(True):
@@ -71,30 +72,34 @@ def video_panorama(cap,cam_matrix, video_dirname):
     global FRAME_NB_BTW_PANO
     global PROJECTION_MATRICE
 
-    relative_angle = [0.0, 0.0, 0.0]
-    panorama = None
-    nb_frame = FRAME_NB_BTW_PANO
-
-    scaling_factor = cam_matrix[0][0] #Scaling Factor equal to focal length
-
+    focal_length = cam_matrix[0][0]
+    scaling_factor = focal_length #Scaling Factor equal to focal length
     PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
 
+    relative_angle = [0.0, 0.0, 0.0]
+
+    panorama = None
+    nb_frame = FRAME_NB_BTW_PANO
+    last_frame_in_pano = None
     rec_pos = (0,0)
-    frame_buffer = list()
+    prec_trans = 0.0
 
     if(len(cap) > 0):
         frame = cap.pop()
     else:
         print("Error: 0 frame in the video mentionned.")
         exit(-1)
+    frame_buffer = list()
 
     while(len(cap) > 0):
         prec_frame = frame
         frame = cap.pop()
         frame = cv2.resize(frame, RESOLUTION)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         if panorama is None:
             panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+            last_frame_in_pano = frame
 
         if(nb_frame > 0):
             nb_frame = nb_frame - 1;
@@ -103,46 +108,45 @@ def video_panorama(cap,cam_matrix, video_dirname):
                 del(frame_buffer[0])
 
             frame_buffer.append(frame)
-            angle = get_angle(prec_frame, frame, cam_matrix)
-            relative_angle = list(map(operator.add, relative_angle,angle))
         else:
-            curr_frame = frame.copy()
-            tmp = curr_frame
+            tmp = frame.copy()
 
             while(len(frame_buffer) > 0):
-                panorama, translation = get_panorama("cylindrical",panorama,tmp, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+                panorama, translation = get_panorama("cylindrical",panorama,tmp,last_frame_in_pano,prec_trans, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+
                 if translation is None:
                     tmp = frame_buffer.pop()
                 else:
-                    angle = get_angle(prec_frame, tmp, cam_matrix)
+                    angle = get_angle(last_frame_in_pano, tmp, cam_matrix)
                     relative_angle = list(map(operator.add, relative_angle,angle))
+                    last_frame_in_pano = tmp
+                    prec_trans = translation
                     break
 
             if(len(frame_buffer) == 0):
                 print("Error : The panorama can't be made on this Video Sequence (not enough matches could be made).")
                 exit(-1)
-
-            if(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
+            elif(len(frame_buffer) > FRAME_NB_BTW_PANO - 1):
                 del(frame_buffer[0])
             else:
-                FRAME_NB_BTW_PANO = FRAME_NB_BTW_PANO/2
+                print("Number of Frame between two panorama computation :" + str(FRAME_NB_BTW_PANO))
+                FRAME_NB_BTW_PANO = round(FRAME_NB_BTW_PANO/2 + 0.5)
 
             frame_buffer.append(frame)
             nb_frame = FRAME_NB_BTW_PANO
-
             panorama_to_display = cv2.cvtColor(panorama.copy(), cv2.COLOR_GRAY2BGR)
-
             rec_pos = (int(translation),0)
+
             cv2.rectangle(panorama_to_display,rec_pos,(RESOLUTION[0]+rec_pos[0],RESOLUTION[1] + rec_pos[1]),(0,0,255),10)
             cv2.putText(panorama_to_display, ("angle:" + str(relative_angle[1])), (rec_pos[0], rec_pos[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0, 255))
 
             open_window("Panorama")
             cv2.imshow("Panorama", panorama_to_display)
 
-
         key = cv2.waitKey(5) & 0xFF
 
         if key == ord("q"):
+            print("You quit.")
             break
         elif key == ord("p"):
             while(True):
@@ -196,12 +200,8 @@ def live_matching_demo(cap,cam_matrix):
         key = cv2.waitKey(1) & 0xFF
 
         if key == ord("q"):
+            print("You quit.")
             break
-        elif key == ord("p"):
-            while(True):
-                key = cv2.waitKey(0) & 0xFF
-                if(key == ord("p")):
-                    break
         elif key == ord("s"):
             start_live = not start_live
             if start_live is False:
@@ -294,6 +294,7 @@ def live_panorama(cap,cam_matrix):
         key = cv2.waitKey(10) & 0xFF
 
         if key == ord("q"):
+            print("You quit.")
             break
         elif key == ord("s"):
             if start_pano is True:
@@ -326,8 +327,9 @@ if __name__ == "__main__":
         live = True
         #print("Live Motion_Detection is Not Implemented Yet")
         #exit(-1)
-        cap = cv2.VideoCapture(0)
-        #cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
+        #cap = cv2.VideoCapture(0)
+        cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
+
     elif(len(sys.argv) == 4):
         cmatrix_filename = sys.argv[1]
         cam_matrix = get_cam_matrix(cmatrix_filename)
