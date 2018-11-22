@@ -136,7 +136,6 @@ def flann_matching(img1, img2, display, method = "orb"):
 
         open_window("Feature Matcher - " + method + " Flanner")
         cv2.imshow("Feature Matcher - " + method + " Flanner", img3)
-        ret = cv2.imwrite(("Match.jpg") ,img3)
 
     return matches, key_points1, key_points2
 
