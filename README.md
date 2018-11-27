@@ -49,7 +49,7 @@ python3 main.py CAMERA_MATRIX.json {panorama, matching_demo} [FOLDER PATH]
 * `CAMERA_MATRIX.json` : Camera matrix computed with the camera calibration, store in a Json file. CAMERA_MATRIX should be change with the name/path of the Json object. (Using our CameraCalibration.py script, the Json of the camera matrix is store in Capture/time_of_the_calibration.json )
 * `{panorama, matching_demo}`: Specify one of the possible arguments:
   * ``panorama`` should be use to create a panorama. The output panorama register itself in the current folder.
-  * `matching_demo` should be use to see how the matching of feature take place. Does not create any results and only help for better understanding option. The following inputs can be used in this case :
+  * `matching_demo` should be use to see how the matching of feature takes place. Does not create any results and only help for better understanding the code. The following inputs can be used in this case :
     * `p` Pause/Unpause the stream.
     * `r` Restart display.
     * `q` Quit.
