@@ -13,6 +13,11 @@ def get_angle(img1,img2,cam_matrix, display = False):
     """
     #Creating the homography matrix. See transformation.py
     homo_matrix = get_homography_matrix(img1, img2, display)
+
+    if homo_matrix is None:
+        print("Error: Fail to get the angle.")
+        return 0
+
     #Obtain the diffrent rotation, ..., from the homography matrix. See transformation.py
     retval, rotation_matrix,trans_matrix, normals = get_decomposed_homo_matrix(homo_matrix, cam_matrix)
     #Note that trans_matrix and  normals are not used.

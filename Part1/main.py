@@ -46,7 +46,7 @@ def video_matching_demo(cap,cam_matrix):
         relative_angle = list(map(operator.add, relative_angle,angle))
         cv2.putText(frame, ("angle:" + str(relative_angle[1])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
 
-        key = cv2.waitKey(10) & 0xFF
+        key = cv2.waitKey(1) & 0xFF
 
         if key == ord("q"):
             print("You quit.")
@@ -145,7 +145,7 @@ def video_panorama(cap,cam_matrix):
             open_window("Panorama")
             cv2.imshow("Panorama", panorama_to_display)
 
-        key = cv2.waitKey(5) & 0xFF
+        key = cv2.waitKey(1) & 0xFF
 
         if key == ord("q"):
             print("You quit.")
@@ -191,13 +191,16 @@ def live_matching_demo(cap,cam_matrix):
 
         if ret is True:
             frame = cv2.resize(frame, RESOLUTION)
-            open_window("Live")
-            cv2.imshow("Live", frame)
 
-        if prec_ret is True and ret is True:
+        if prec_ret is True and ret is True and start_live:
             angle = get_angle(prec_frame, frame, cam_matrix, start_live)
             relative_angle = list(map(operator.add, relative_angle,angle))
             cv2.putText(frame, ("angle:" + str(relative_angle[1])), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255, 255))
+
+        if ret is True:
+            open_window("Live")
+            cv2.imshow("Live", frame)
+
 
         key = cv2.waitKey(1) & 0xFF
 
@@ -208,6 +211,8 @@ def live_matching_demo(cap,cam_matrix):
             start_live = not start_live
             if start_live is False:
                 cv2.destroyWindow("Feature Matcher - orb Flanner")
+            else:
+                relative_angle = [0.0, 0.0, 0.0]
 
     cap.release()
     cv2.destroyAllWindows()
@@ -221,22 +226,23 @@ def live_panorama(cap,cam_matrix):
 
     while(cap.isOpened()):
         ret, frame = cap.read()
-        frame = cv2.resize(frame, RESOLUTION)
 
         if ret is True:
+            frame = cv2.resize(frame, RESOLUTION)
             open_window("Live")
             cv2.imshow("Live", frame)
 
             if start_pano is True:
                 frame_buffer.append(frame)
 
-        key = cv2.waitKey(10) & 0xFF
+        key = cv2.waitKey(1) & 0xFF
 
         if key == ord("q"):
             print("You quit.")
             break
         elif key == ord("s"):
             if start_pano is True:
+                print("Panorama being computed ...")
                 video_panorama(frame_buffer,cam_matrix)
             start_pano = not start_pano
 
@@ -257,8 +263,8 @@ if __name__ == "__main__":
         live = True
         #print("Live Motion_Detection is Not Implemented Yet")
         #exit(-1)
-        cap = cv2.VideoCapture(0)
-        #cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
+        #cap = cv2.VideoCapture(0)
+        cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
 
     elif(len(sys.argv) == 4):
         cmatrix_filename = sys.argv[1]
