@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from Transformation import *
 
+RESOLUTION = (1280,720)
 ###############################################################################
 #                                  Fonctions                                  #
 ###############################################################################
@@ -65,17 +66,19 @@ def cylindricalWarpImages(img1,img2,img3,prec_trans,cam_matrix, scaling_factor, 
     # Affine transformation
     #transfo = get_affine_transfo(warp2,img1)
     transfo = get_affine_transfo(warp2,warp3)
-    cv2.waitKey(20)
+
     if transfo is not None:
-        total = transfo[0][2] + prec_trans
+
         transfo[0][0] = 1
         transfo[0][1] = 0
         transfo[1][0] = 0
         transfo[1][1] = 1
         transfo[1][2] = 0
-        transfo[0][2] = total
+        total = transfo[0][2] + prec_trans
 
-        if(transfo[0][2] > 0):
+        if(transfo[0][2] > 0 and total > 0):
+            transfo[0][2] = total
+
             cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
 
             a = np.nonzero(img1)
@@ -85,21 +88,47 @@ def cylindricalWarpImages(img1,img2,img3,prec_trans,cam_matrix, scaling_factor, 
 
             output[a] = img1[a]
             output[b] = cyl_warp[b]
-        else:
-            transfo[0][2] = abs(transfo[0][2] - prec_trans)
-            cyl_warp = cv2.warpAffine(img1, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
+        elif(transfo[0][2] < 0 and total > 0):
             transfo[0][2] = total
+            cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
+
+            a = np.nonzero(img1)
+            b = np.nonzero(cyl_warp)
+
+            output = np.zeros_like(cyl_warp)
+
+            output[a] = img1[a]
+            output[b] = cyl_warp[b]
+
+        elif(transfo[0][2] > 0 and total < 0):
+            transfo[0][2] = img1.shape[1]- RESOLUTION[0] - abs(total)
+
+            cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1],img1.shape[0]))
+
+            a = np.nonzero(img1)
+            b = np.nonzero(cyl_warp)
+
+            output = np.zeros_like(cyl_warp)
+
+            output[a] = img1[a]
+            output[b] = cyl_warp[b]
+
+        else:
+            transfo[0][2] = abs(transfo[0][2])
+
+            cyl_warp = cv2.warpAffine(img1, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
 
             a = np.nonzero(warp2)
             b = np.nonzero(cyl_warp)
 
             output = np.zeros_like(cyl_warp)
 
-            output[a] = warp2[a]
             output[b] = cyl_warp[b]
+            output[a] = warp2[a]
+
 
         #output = cv2.fastNlMeansDenoising(output)
-        return autocrop(output), transfo[0][2]
+        return autocrop(output), total
     else:
         print("Error : No Affine Transformation was found between both images.")
         return img1, None
