@@ -9,9 +9,10 @@ from Angle import *
 from Panorama import *
 from JetsonCam import *
 from Reader import *
+from Motion_Detection import *
 
 PROJECTION_MATRICE = None
-IMPLEMENTED_MODE = ["panorama", "matching_demo"]
+IMPLEMENTED_MODE = ["panorama", "matching_demo", "motion_detection"]
 FRAME_NB_BTW_PANO = 15
 RESOLUTION = (1280,720)
 WINDOW_WIDTH = 1280
@@ -85,9 +86,7 @@ def video_panorama(cap,cam_matrix):
     last_frame_in_pano = None
     trans = 0.0
 
-    if(len(cap) > 0):
-        frame = cap.pop()
-    else:
+    if(len(cap) < 0):
         print("Error: 0 frame in the video mentionned.")
         exit(-1)
 
@@ -99,7 +98,7 @@ def video_panorama(cap,cam_matrix):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         if panorama is None:
-            panorama = get_cylindrical(frame, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+            panorama = get_cylindrical(frame, PROJECTION_MATRICE)
             last_frame_in_pano = frame
             panorama_to_display = cv2.cvtColor(panorama.copy(), cv2.COLOR_GRAY2BGR)
             cv2.rectangle(panorama_to_display,(0,0),(RESOLUTION[0],RESOLUTION[1]),(0,0,255),10)
@@ -118,7 +117,7 @@ def video_panorama(cap,cam_matrix):
             prec_trans = trans
 
             while(len(frame_buffer) > 0):
-                tmp_panorama, tmp_translation = get_panorama("cylindrical",panorama,tmp,last_frame_in_pano,trans, cam_matrix, scaling_factor, RESOLUTION, PROJECTION_MATRICE)
+                tmp_panorama, tmp_translation = get_panorama("cylindrical",panorama,tmp,last_frame_in_pano,trans,PROJECTION_MATRICE)
 
                 if tmp_translation is None:
                     tmp = frame_buffer.pop()
@@ -156,7 +155,6 @@ def video_panorama(cap,cam_matrix):
                 cv2.rectangle(panorama_to_display,(int(panorama.shape[1] - (abs(trans) + RESOLUTION[0])),0),(int(panorama.shape[1] - (abs(trans) + RESOLUTION[0]) + RESOLUTION[0]),RESOLUTION[1]),(0,0,255),10)
                 cv2.putText(panorama_to_display, ("angle:" + str(relative_angle[1])), ((int(panorama.shape[1] - (abs(trans) + RESOLUTION[0]))), 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0, 255))
 
-            print(int(panorama.shape[1] - (abs(trans) + RESOLUTION[0])))
             open_window("Panorama")
             cv2.imshow("Panorama", panorama_to_display)
 
@@ -186,6 +184,82 @@ def video_panorama(cap,cam_matrix):
             print("Panorama Saved")
     else:
         print("Error: The panorama has not been computed.")
+
+    cv2.destroyAllWindows()
+
+def video_motion_detection_demo(cap,cam_matrix):
+    global FRAME_NB_BTW_PANO
+    global PROJECTION_MATRICE
+
+    cap2 = cap.copy()
+    relative_angle = [0.0, 0.0, 0.0]
+
+    focal_length = cam_matrix[0][0]
+    scaling_factor = focal_length #Scaling Factor equal to focal length
+    PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
+
+    if(len(cap) > 0):
+        frame = cap.pop()
+        frame = cv2.resize(frame, RESOLUTION)
+        #Use grayscale ==> lighter computations
+        gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        # Blur footage to prevent artifacts
+    else:
+        print("Error: 0 frame in the video mentionned.")
+        exit(-1)
+
+    frame_counter = 100
+
+    fgbg = cv2.createBackgroundSubtractorMOG2()
+
+    while(len(cap) > 0):
+        frame = cap.pop()
+        frame = cv2.resize(frame, RESOLUTION)
+
+        if(frame_counter > 0):
+            frame_counter = frame_counter - 1
+            continue
+
+        #angle = get_angle(prec_frame, frame, cam_matrix, False)
+        #relative_angle = list(map(operator.add, relative_angle,angle))
+
+        prec_gray = gray
+
+        #Use grayscale ==> lighter computations
+        gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+
+        to_disp = frame.copy()
+
+        motion_mask = motion_detection(fgbg,prec_gray, gray, to_disp, PROJECTION_MATRICE)
+        #motion_mask = bad_motion_detection(fgbg,frame,to_disp)
+
+        open_window("frame")
+        cv2.imshow('frame',to_disp)
+
+        if(motion_mask is not None):
+            open_window("Motion Mask")
+            cv2.imshow('Motion Mask',motion_mask)
+
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord("q"):
+            print("You quit.")
+            break
+        elif key == ord("p"):
+            while(True):
+                key = cv2.waitKey(0) & 0xFF
+                if(key == ord("p")):
+                    break
+        elif key == ord("r"):
+            cap = cap2.copy()
+            if(len(cap) > 0):
+                frame = cap.pop()
+            else:
+                print("Error: 0 frame in the video mentionned.")
+                exit(-1)
+
+            relative_angle = [0.0, 0.0, 0.0]
 
     cv2.destroyAllWindows()
 
@@ -264,6 +338,10 @@ def live_panorama(cap,cam_matrix):
     cap.release()
     cv2.destroyAllWindows()
 
+def live_motion_detection_demo(cap,cam_matrix):
+    print("Live Motion Detection Demo is not implemented yet.")
+    exit(-1)
+
 if __name__ == "__main__":
 
     live = False
@@ -276,8 +354,6 @@ if __name__ == "__main__":
             print("Error: Implemented modes are " + str(IMPLEMENTED_MODE) + ".")
             exit(-1)
         live = True
-        #print("Live Motion_Detection is Not Implemented Yet")
-        #exit(-1)
         #cap = cv2.VideoCapture(0)
         cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
 
@@ -311,3 +387,8 @@ if __name__ == "__main__":
         video_panorama(cap,cam_matrix)
     elif live is False and mode == "matching_demo":
         video_matching_demo(cap,cam_matrix)
+    elif(live is False and mode == "motion_detection"):
+        video_motion_detection_demo(cap,cam_matrix)
+    elif(live is True and mode == "motion_detection"):
+        live_motion_detection_demo(cap,cam_matrix)
+

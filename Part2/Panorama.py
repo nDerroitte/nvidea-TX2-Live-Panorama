@@ -26,42 +26,89 @@ def compute_projection_matrix(cam_matrix, scaling_factor, resolution):
             y_ = int(scaling_factor * (float(y-y_c)/(np.sqrt(np.square(float(x-x_c)) + np.square(focal_length[0])))) + y_c)
             proj_mat[x][y] = (x_,y_)
 
-    return proj_mat
+    indices = [[], []]
+    indices_ = [[], []]
+    [((indices[0].append(b), indices[1].append(a)),(indices_[0].append(proj_mat[a,b][1]), indices_[1].append(proj_mat[a,b][0]))) for a in range(w) for b in range(h)]
 
-def get_panorama(method,panorama,frame,last_frame,prec_trans, cam_matrix, scaling_factor, resolution, projection_matrice):
+    tmp = [b > 0 and b < w and a > 0 and a < h for a,b in zip(*indices_)]
+
+    indices_ = [np.array(indices_[0])[np.array(tmp)], np.array(indices_[1])[np.array(tmp)]]
+    indices = [np.array(indices[0])[np.array(tmp)], np.array(indices[1])[np.array(tmp)]]
+
+    return proj_mat, indices, indices_
+
+def get_panorama(method,panorama,frame,last_frame,prec_trans, projection_matrix):
     """
     Function in charge of getting the panorama
     """
     if(method == "cylindrical"):
         # Warping the image : proj
-        return cylindricalWarpImages(panorama,frame,last_frame,prec_trans, cam_matrix, scaling_factor, resolution, projection_matrice)
+        return cylindricalWarpImages(panorama,frame,last_frame,prec_trans, projection_matrix)
     else:
         print("Error : Unknown or Unimplemented panorama method " + method + ".")
 
-def get_cylindrical(img, cam_matrix, scaling_factor,resolution, projection_matrice):
+def get_cylindrical(img,projection_matrice):
     """
     Function that project the image onto a cylinder image using the projection_matrice
     """
     cyl_proj = np.zeros_like(img)
-    h,w = img.shape
+    indices = projection_matrice[1]
+    indices_ = projection_matrice[2]
 
-    for y in range(h):
+    cyl_proj[tuple(indices_)] = img[tuple(indices)]
+
+    '''for y in range(h):
         for x in range(w):
             x_, y_ = projection_matrice[x,y]
-            if(x_ > 0 and x_ < w and y_ > 0 and y_ < h):
-                cyl_proj[y_,x_] = img[y,x]
-
-    cyl_proj = autocrop(cyl_proj)
+            if(x_ >= 0 and x_ < w and y_ >= 0 and y_ < h):
+                cyl_proj[y_,x_] = img[y,x]'''
 
     return cyl_proj
 
-def cylindricalWarpImages(img1,img2,img3,prec_trans,cam_matrix, scaling_factor, resolution, projection_matrice):
+def get_cartesian(warp,projection_matrice):
+    global RESOLUTION
+    """
+    Function that get back an image to the cylinder plane using the projection_matrice
+    """
+    cyl_proj = np.zeros((RESOLUTION[1],RESOLUTION[0]), np.uint8)
+
+    indices = projection_matrice[1]
+    indices_ = projection_matrice[2]
+
+    cyl_proj[tuple(indices)] = warp[tuple(indices_)]
+
+    '''for y in range(h):
+        for x in range(w):
+            x_, y_ = projection_matrice[x,y]
+            if(x_ >= 0 and x_ < w_ and y_ >= 0 and y_ < h_):
+                cyl_proj[y,x] = warp[y_,x_]'''
+
+    return cyl_proj
+
+def get_transfo(img2,img3,projection_matrix):
+    # Getting the warp version of the image
+    warp2 = get_cylindrical(img2, projection_matrix)
+    warp3 = get_cylindrical(img3, projection_matrix)
+
+    # Affine transformation
+    transfo = get_affine_transfo(warp2,warp3)
+
+    if(transfo is not None):
+        return warp2, warp3, transfo[0][2]
+    else:
+        return warp2, warp3, None
+
+def cylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix):
+    global RESOLUTION
     """
     Function in charge of stiching the cylindrical image together
     """
     # Getting the warp version of the image
-    warp2 = get_cylindrical(img2, cam_matrix,scaling_factor,resolution, projection_matrice)
-    warp3 = get_cylindrical(img3, cam_matrix,scaling_factor,resolution, projection_matrice)
+    warp2 = get_cylindrical(img2, projection_matrix)
+    warp3 = get_cylindrical(img3, projection_matrix)
+
+    warp2 = autocrop(warp2)
+    warp3 = autocrop(warp3)
 
     # Affine transformation
     #transfo = get_affine_transfo(warp2,img1)
