@@ -1,4 +1,4 @@
-*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection). The installation part have also been updated*
+*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection). The installation part have also been updated.*
 # Installation and usage of the code
 ## Installation
 The first step is to install the following package on the Jetson : 
