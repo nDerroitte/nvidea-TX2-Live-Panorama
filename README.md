@@ -1,4 +1,4 @@
-fi*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection)*
+*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection)*
 # Installation and usage of the code
 ## Installation
 After placing the all the code in a folder and openning a terminal on the according folder there is nothing much to do as far as installation is concerned.
