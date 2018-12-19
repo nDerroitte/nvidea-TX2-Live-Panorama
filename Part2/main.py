@@ -12,6 +12,7 @@ from Reader import *
 from Motion_Detection import *
 from Util import *
 from MaskComp import *
+from PersonDetection import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo", "motion_detection", "enhanced_panorama", "personn_detection"]
@@ -20,6 +21,11 @@ RESOLUTION = (1280,720)
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 FRAME_RATE = 25
+
+#PERSONN_DETECTION_ALGO = "Opencv"
+PERSONN_DETECTION_ALGO = "Tensorflow"
+
+MODEL_PATH = "models/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb"
 
 def get_cam_matrix(filename):
     json_data = open(filename).read()
@@ -388,9 +394,15 @@ def video_enhanced_panorama(cap,cam_matrix):
 
     cv2.destroyAllWindows()
 
-def video_personn_detection(cap, cam_matrix):
-    print('Video Personn Detection is not implemented yet')
-    exit(-1)
+def video_personn_detection(video_path):
+    global MODEL_PATH
+
+    if(PERSONN_DETECTION_ALGO == "Opencv"):
+        detect_opcv(video_path)
+    elif(PERSONN_DETECTION_ALGO == "Tensorflow"):
+        detect_tf(video_path,MODEL_PATH)
+    else:
+        print("Error : Unknown Personn Detection algorithm")
 
 def motion_detection_assessment(cap, cam_matrix, video_nb):
     global FRAME_NB_BTW_PANO
@@ -450,9 +462,23 @@ def motion_detection_assessment(cap, cam_matrix, video_nb):
 
     cv2.destroyAllWindows()
 
-def personn_detection_assesment(cap,cam_matrix, video_nb):
-    print("Personn Detection Assessment not implemented yet")
-    exit(-1)
+def personn_detection_assesment(video_path, video_nb):
+    global PERSONN_DETECTION_ALGO
+
+    if(video_nb == 1):
+        dir_annotation = "Annotation/In/"
+        ann_path = dir_annotation + "box_6_1.txt"
+    else:
+        dir_annotation = "Annotation/Out/"
+        ann_path = dir_annotation + "box_6_2.txt"
+
+
+    if(PERSONN_DETECTION_ALGO == "Opencv"):
+        perf_ass_opcv(video_path,ann_path)
+    elif(PERSONN_DETECTION_ALGO == "Tensorflow"):
+        perf_ass_tf(video_path,ann_path)
+    else:
+        print("Error : Unknown Personn Detection algorithm")
 
 def live_matching_demo(cap,cam_matrix):
     global FRAME_NB_BTW_PANO
@@ -702,10 +728,10 @@ if __name__ == "__main__":
         live_enhanced_panorama(cap,cam_matrix)
 
     elif(live is False and mode == "personn_detection" and perf_assess == False):
-        video_personn_detection(cap,cam_matrix)
+        video_personn_detection(video_dirname)
 
     elif(live is False and mode == "personn_detection" and perf_assess == False):
-        personn_detection_assesment(cap,cam_matrix, video_nb)
+        personn_detection_assesment(video_dirname, video_nb)
 
     elif(live is True and mode == "personn_detection"):
         live_personn_detection(cap,cam_matrix)
