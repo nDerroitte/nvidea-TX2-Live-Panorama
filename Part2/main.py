@@ -649,6 +649,8 @@ def live_personn_detection(cap):
         print("Error : Unknown Personn Detection algorithm")
         exit(-1)
 
+    start_detect = False
+
     while(cap.isOpened()):
         ret, frame = cap.read()
 
