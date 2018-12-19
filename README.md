@@ -70,8 +70,9 @@ The Jetson TX2 boosting can be use in order to increase the performance of the a
 
 In order to access the motion detection, one can use the following code : 
 ```sh
-python3 main.py motion_detection [FOLDER PATH, PERFORMANCE ASSESSMENT]
+python3 main.py CAMERA_MATRIX.json motion_detection [FOLDER PATH, PERFORMANCE ASSESSMENT]
 ```
+* `CAMERA_MATRIX.json` : Camera matrix computed with the camera calibration, store in a Json file. CAMERA_MATRIX should be change with the name/path of the Json object. (Using our CameraCalibration.py script, the Json of the camera matrix is store in Capture/time_of_the_calibration.json )
 * `FOLDER_PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
 * `PERFORCEMENT ASSESSMENT`: If specify (with the value True), enable the perforcement assessment of the motion detection module. Will print the mean error of all erros made by the module (See report for detail about these errors). An  **Annotation/{In, Out}/** folder containing the reference masks and the box text file should be present in the current folder.
 If not specify : the output is the sequence where the object in motion are framed with a red rectangles.
@@ -91,9 +92,10 @@ The Jetson TX2 boosting can be use in order to increase the performance of the a
 ### Person detection
 To run the person detection module, one should use the following line : 
 ```sh
-python3 main.py person_detection [FOLDER PATH, PERFORMANCE ASSESSMENT]
+python3 main.py CAMERA_MATRIX.json person_detection [FOLDER PATH, PERFORMANCE ASSESSMENT]
 ```
 The arguments work exactly as for the Motion detection module : 
+* `CAMERA_MATRIX.json` : Camera matrix computed with the camera calibration, store in a Json file. CAMERA_MATRIX should be change with the name/path of the Json object. (Using our CameraCalibration.py script, the Json of the camera matrix is store in Capture/time_of_the_calibration.json )
 * `FOLDER_PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
 * `PERFORCEMENT ASSESSMENT`: If specify (with the value True), enable the perforcement assessment of the person detection module. Will print the mean error of all erros made by the module (See report for detail about these errors). An  **Annotation/{In, Out}/** folder containing the reference masks and the box text file should be present in the current folder.
 If not specify : the output is the sequence where the humain are framed with a red rectangles.
@@ -113,9 +115,10 @@ The Jetson TX2 boosting can be use in order to increase the performance of the a
 ### Enhanced panoramic image
 To create the enhanced panoramic image, where the moving objects have been removed, the following command should be use : 
 ```sh
-python3 main.py enhanced_panorama [FOLDER PATH]
+python3 main.py CAMERA_MATRIX.json enhanced_panorama [FOLDER PATH]
 ```
 The output panorama registers itself in **./enhanced_panorama.jgp**. 
+* `CAMERA_MATRIX.json` : Camera matrix computed with the camera calibration, store in a Json file. CAMERA_MATRIX should be change with the name/path of the Json object. (Using our CameraCalibration.py script, the Json of the camera matrix is store in Capture/time_of_the_calibration.json )
 * `FOLDER PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
 
 If run in live the user can use the following inputs : 
