@@ -694,6 +694,7 @@ if __name__ == "__main__":
         if mode not in IMPLEMENTED_MODE:
             print("Error: Implemented modes are " + str(IMPLEMENTED_MODE) + ".")
             exit(-1)
+
         video_dirname = sys.argv[3]
         nb_video = int(video_dirname.split("_")[1])
         perf_assess = False
@@ -764,8 +765,11 @@ if __name__ == "__main__":
     elif(live is False and mode == "personn_detection" and perf_assess == False):
         video_personn_detection(video_dirname)
 
-    elif(live is False and mode == "personn_detection" and perf_assess == False):
+    elif(live is False and mode == "personn_detection" and perf_assess == True):
         personn_detection_assesment(video_dirname, video_nb)
 
     elif(live is True and mode == "personn_detection"):
         live_personn_detection(cap)
+    else:
+        print("Error: python3.6 main.py cam_matrix_filename.json mode=" + str(IMPLEMENTED_MODE) + " [video_dirname] [performance_assessment=True]")
+        exit(-1)
