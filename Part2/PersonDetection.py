@@ -11,7 +11,7 @@ VIDEO_SEQ = 1
 ANN_FOLDER = "Annotation/In/"
 
 THRESHOLD = 0.8
-MODEL_PATH = "models/ssd_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"
+MODEL_PATH = "models/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb"
 
 THRESHOLDS = [0.6,0.7,0.8]
 MODELS = [
@@ -20,8 +20,11 @@ MODELS = [
     "models/ssd_inception_v2_coco_2018_01_28/frozen_inference_graph.pb",
     "models/faster_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"]
 
-def personDetection(algo, img, detector, p_a=False, img_nb=None
+def person_detection(algo, img, detector, p_a=False, img_nb=None
     , threshold = 0.8):
+    """
+    Perform the person detection using the appropriate method
+    """
 
     start = time.time()
     if algo == 'tensorflow':
@@ -48,6 +51,9 @@ def personDetection(algo, img, detector, p_a=False, img_nb=None
         return detection_time
 
 def detect_opcv(video_path,ann_path):
+    """
+    Perform the person detection using the OpenCV method
+    """
     files = sorted(os.listdir(video_path))
     ref_img = getRefId(ann_path)
     detector = HumanDetectorOCV()
@@ -56,9 +62,12 @@ def detect_opcv(video_path,ann_path):
         if file_name.split(".")[-1].lower() in {"jpeg", "jpg", "png"}:
             image = cv2.imread(video_path + file_name)
             if image is not None:
-                personDetection("opencv",image,detector)
+                person_detection("opencv",image,detector)
 
 def detect_tf(video_path,ann_path,model_path,threshold):
+    """
+    Perform the person detection using the Tensorflow method
+    """
     files = sorted(os.listdir(video_path))
     ref_img = getRefId(ann_path)
     detector = HumanDetectorTF(model_path)
@@ -67,9 +76,12 @@ def detect_tf(video_path,ann_path,model_path,threshold):
         if file_name.split(".")[-1].lower() in {"jpeg", "jpg", "png"}:
             image = cv2.imread(video_path + file_name)
             if image is not None:
-                personDetection("tensorflow",image,detector,threshold=threshold)
+                person_detection("tensorflow",image,detector,threshold=threshold)
 
 def perf_ass_opcv(video_path,ann_path):
+    """
+    Perform the performance assessment of the OpenCV method
+    """
     files = sorted(os.listdir(video_path))
     ref_img = getRefId(ann_path)
     detector = HumanDetectorOCV()
@@ -84,17 +96,20 @@ def perf_ass_opcv(video_path,ann_path):
             image = cv2.imread(video_path + file_name)
             if image is not None:
                 if img_nb in ref_img:
-                    error, detection_time = personDetection("opencv",image,
+                    error, detection_time = person_detection("opencv",image,
                         detector,True,img_nb)
                     total_error += error
                     ann_nb += 1
                 else:
-                    detection_time = personDetection("opencv",image,detector)
+                    detection_time = person_detection("opencv",image,detector)
                 computation_time += detection_time
         img_nb += 1
     return (total_error/(ann_nb+1)), (computation_time/(img_nb+1))
 
 def perf_ass_tf(video_path, ann_path, model_path, threshold):
+    """
+    Perform the performance assessment of the Tensorflow method
+    """
     files = sorted(os.listdir(video_path))
     ref_img = getRefId(ann_path)
     detector = HumanDetectorTF(model_path)
@@ -109,18 +124,21 @@ def perf_ass_tf(video_path, ann_path, model_path, threshold):
             image = cv2.imread(video_path + file_name)
             if image is not None:
                 if img_nb in ref_img:
-                    error, detection_time = personDetection("opencv",image,
+                    error, detection_time = person_detection("opencv",image,
                         detector,True,img_nb,threshold)
                     total_error += error
                     ann_nb += 1
                 else:
-                    detection_time = personDetection("opencv",image,detector
+                    detection_time = person_detection("opencv",image,detector
                         ,threshold=threshold)
                 computation_time += detection_time
         img_nb += 1
     return (total_error/(ann_nb+1)), (computation_time/(img_nb+1))
 
 def study_params(video_path, ann_path, models, thresholds):
+    """
+    Study the parameters of the Tensorflow method
+    """
     for model_path in models:
         for threshold in thresholds:
             error, computation_time = perf_ass_tf(video_path, ann_path
@@ -132,4 +150,6 @@ def study_params(video_path, ann_path, models, thresholds):
 
 if __name__ == "__main__":
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    study_params(VIDEO_PATH,ANN_PATH,MODELS,THRESHOLDS)
+    #study_params(VIDEO_PATH,ANN_PATH,MODELS,THRESHOLDS)
+    #print(perf_ass_opcv(VIDEO_PATH,ANN_PATH))
+    print(detect_tf(VIDEO_PATH,ANN_PATH,MODEL_PATH,THRESHOLD))
