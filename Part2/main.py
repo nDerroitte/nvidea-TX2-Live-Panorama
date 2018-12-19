@@ -403,6 +403,7 @@ def video_personn_detection(video_path):
         detect_tf(video_path,MODEL_PATH)
     else:
         print("Error : Unknown Personn Detection algorithm")
+        exit(-1)
 
 def motion_detection_assessment(cap, cam_matrix, video_nb):
     global FRAME_NB_BTW_PANO
@@ -479,6 +480,7 @@ def personn_detection_assesment(video_path, video_nb):
         perf_ass_tf(video_path,ann_path)
     else:
         print("Error : Unknown Personn Detection algorithm")
+        exit(-1)
 
 def live_matching_demo(cap,cam_matrix):
     global FRAME_NB_BTW_PANO
@@ -632,9 +634,41 @@ def live_enhanced_panorama(cap,cam_matrix):
     cap.release()
     cv2.destroyAllWindows()
 
-def live_personn_detection(cap, cam_matrix):
-    print('Live Personn Detection is not implemented yet')
-    exit(-1)
+def live_personn_detection(cap):
+    global MODEL_PATH
+
+    if(PERSONN_DETECTION_ALGO == "Opencv"):
+        detector = HumanDetectorOCV()
+    elif(PERSONN_DETECTION_ALGO == "Tensorflow"):
+        detector = HumanDetectorTF(MODEL_PATH)
+    else:
+        print("Error : Unknown Personn Detection algorithm")
+        exit(-1)
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+
+        if ret is True:
+            frame = cv2.resize(frame, RESOLUTION)
+
+            if start_detect is True:
+                boxes = detector.detect(frame)
+                for box in boxes:
+                    cv2.rectangle(frame,box[0],box[1],(0,0,255),2)
+
+            open_window("Live")
+            cv2.imshow("Live", frame)
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord("q"):
+            print("You quit.")
+            break
+        elif key == ord("s"):
+            start_detect = not start_detect
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     live = False
@@ -734,4 +768,4 @@ if __name__ == "__main__":
         personn_detection_assesment(video_dirname, video_nb)
 
     elif(live is True and mode == "personn_detection"):
-        live_personn_detection(cap,cam_matrix)
+        live_personn_detection(cap)
