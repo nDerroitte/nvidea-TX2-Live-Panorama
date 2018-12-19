@@ -1,45 +1,14 @@
 import cv2
 import numpy as np
-import imutils
 
 from Panorama import *
+from Feature import *
 
 RESOLUTION = (1280,720)
 
-def get_overlapping_parts(frame1,frame2, proj_matrix):
-    warp1, warp2, translation = get_transfo(frame1,frame2, proj_matrix)
 
-    overlap1 = None
-    overlap2 = None
-
-    if(translation is not None):
-
-        if(warp1.shape[1] > warp2.shape[1]):
-            overlap_length = warp2.shape[1]
-        else:
-            overlap_length = warp1.shape[1]
-
-
-        if(translation > 0):
-            overlap1 = warp1[int(translation) : overlap_length,:]
-            overlap2 = warp2[0:overlap_length - int(translation), :]
-        else:
-            translation = abs(translation)
-            overlap2 = warp2[int(translation) : overlap_length, :]
-            overlap1 = warp1[0:overlap_length - int(translation), :]
-
-        overlap1 = get_cartesian(cv2.resize(overlap1, RESOLUTION), proj_matrix)
-        overlap2 = get_cartesian(cv2.resize(overlap2, RESOLUTION), proj_matrix)
-
-    else:
-        print("Error : No transformation found between 2 frames")
-
-    return overlap1, overlap2
-
-def motion_detection(fgbg,prec_gray, gray, to_disp, proj_matrix):
-
-
-    # Get the overlapping part of both consecutive frame (only common part is relevant for motion detection
+def motion_detection(fgbg,kernel, prec_gray, gray,proj_matrix, to_disp=None):
+    # Get the overlapping part of both consecutive frame (only common part is relevant for motion detection)
     overlap1, overlap2 = get_overlapping_parts(prec_gray, gray, proj_matrix)
 
     if(overlap1 is None or overlap2 is None):
@@ -47,40 +16,44 @@ def motion_detection(fgbg,prec_gray, gray, to_disp, proj_matrix):
         return
 
     # Blur footage to prevent artifacts
-    overlap1= cv2.GaussianBlur(overlap1,(21, 21),0)
-    overlap2 = cv2.GaussianBlur(overlap2,(21, 21),0)
+    prec = cv2.GaussianBlur(overlap1,(21, 21),0)
+    curr = cv2.GaussianBlur(overlap2,(21, 21),0)
 
-    # Compute Difference between two consecutive frame
-    frame_delta = cv2.absdiff(overlap2, overlap1)
-    frame_delta = cv2.bitwise_and(frame_delta, overlap2)
+
+    #prec = cv2.adaptiveThreshold(prec,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+    #curr = cv2.adaptiveThreshold(curr,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+
+    #ret3,prec = cv2.threshold(prec,25,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    #ret3,curr = cv2.threshold(curr,25,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+    #prec = cv2.Canny(prec,95,190)
+    #curr = cv2.Canny(curr,95,190)
+
+    # Compute Difference between two consecutive frame and take the one appearing on the current frame
+    #added = cv2.add(curr, prec)
+    #curr_without_back = cv2.absdiff(added, prec)
+    #frame_delta = cv2.bitwise_and(curr_without_back, curr)
+
+    thresh = 70
+
+    tmp = prec - curr
+    frame_delta = cv2.absdiff(curr, tmp)
+    frame_delta = cv2.bitwise_and(frame_delta, curr)
+    frame_delta[frame_delta<thresh] = 0
+    #frame_delta = cv2.absdiff(frame_delta, prec)
+    #frame_delta = cv2.bitwise_and(frame_delta, curr)
+
+    #match = cv2.matchTemplate(overlap2, overlap1, cv2.TM_SQDIFF)
+
+    #frame_delta = cv2.bitwise_and(frame_delta, overlap2)
+    #frame_delta = cv2.subtract(overlap2, overlap1)
     #frame_delta = cv2.fastNlMeansDenoising(frame_delta)
+
 
     open_window("frame_delta")
     cv2.imshow('frame_delta',frame_delta)
 
     return mask_motion_detection(frame_delta,to_disp)
-
-    '''# params for ShiTomasi corner detection
-    feature_params = dict( maxCorners = 100,
-                           qualityLevel = 0.3,
-                           minDistance = 7,
-                           blockSize = 7 )
-    p0 = cv2.goodFeaturesToTrack(prec_gray, mask = None, **feature_params)
-
-    flow = cv2.calcOpticalFlowFarneback(overlap1,overlap2, p0, 0.5, 3, 15, 3, 5, 1.2, 0)
-
-    #Project the coordinates into the polar plane
-    mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
-
-    hsv = np.zeros((RESOLUTION[1],RESOLUTION[0],3), np.uint8)
-    hsv[...,0] = ang*180/np.pi/2
-    hsv[...,1] = 255
-    hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
-
-
-    open_window("HSV")
-    cv2.imshow("HSV", hsv)
-    return None'''
 
 def mask_motion_detection(frame,to_disp):
     #Create a threshold to exclude minute movements
@@ -89,30 +62,36 @@ def mask_motion_detection(frame,to_disp):
     #Dialate threshold to further reduce error
     thresh = cv2.dilate(thresh,None,iterations=2)
 
+    open_window("Detection Frame")
+    cv2.imshow("Detection Frame",thresh)
+
     mask = np.zeros_like(thresh)
 
     #Check for contours in our threshold
     _,cnts,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
+    min_width = 20
+    min_height = 20
+
     # For each contour
     for i in range(len(cnts)):
-        #tmp = np.zeros(thresh.shape,np.uint8)
-        #cv2.drawContours(tmp,[cnts[i]],0,255,-1)
         # If the contour is big enough (and dense enough to represent an object).
-        if cv2.contourArea(cnts[i]) > 1000: #and cv2.mean(thresh,mask = tmp)[0] > 120:
+        if cv2.contourArea(cnts[i]) > 1000:
             # Create a bounding box for our contour
             (x,y,w,h) = cv2.boundingRect(cnts[i])
-            # Convert from float to int, and scale up our boudning box
-            (x,y,w,h) = (int(x),int(y),int(w),int(h))
-            # Initialize tracker
-            bbox = (x,y,w,h)
+            if(w > min_width and h > min_height):
+                # Convert from float to int, and scale up our boudning box
+                (x,y,w,h) = (int(x),int(y),int(w),int(h))
+                # Initialize tracker
+                bbox = (x,y,w,h)
 
-            p1 = (int(bbox[0]), int(bbox[1]))
-            p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
-            cv2.rectangle(to_disp,p1,p2,(0,0,255),5)
-            cv2.fillPoly(mask, pts =[np.array(cnts[i])], color=(255,255,255))
-            #cv2.drawContours(mask, cnts, i, 255, 3)
-            print("Motion Detected")
+                p1 = (int(bbox[0]), int(bbox[1]))
+                p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+                cv2.fillPoly(mask, pts =[np.array(cnts[i])], color=(255,255,255))
+                #cv2.drawContours(mask, cnts, i, 255, 3)
+
+            if(to_disp is not None):
+                    cv2.rectangle(to_disp,p1,p2,(0,0,255),5)
 
     return mask
 
@@ -145,3 +124,29 @@ def bad_motion_detection(fgbg, frame,to_disp):
             cv2.rectangle(to_disp,p1,p2,(0,0,255),5)
 
     return fgmask
+
+def get_mask(matches,key_points1,key_points2):
+    # Minimum number of matching
+    MIN_MATCH = 10
+    # Parameter to stop computing. Terminaison condition
+    MAX_RANSAC_REPROJ_ERROR = 5.0
+
+    if len(matches)>= MIN_MATCH:
+        src_pts = list()
+        dst_pts = list()
+
+        for m in matches:
+            src_pts.append(key_points1[m.queryIdx].pt)
+            dst_pts.append(key_points2[m.trainIdx].pt)
+
+        src_pts = np.float32([src_pts]).reshape(-1,1,2)
+        dst_pts = np.float32([dst_pts]).reshape(-1,1,2)
+
+
+        #Creating the homography matrix
+        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,MAX_RANSAC_REPROJ_ERROR)
+
+        return mask
+    else:
+        print("Not enough matches are found : " + str(len(matches)) + " < " + str(MIN_MATCH) + ".")
+        return None
