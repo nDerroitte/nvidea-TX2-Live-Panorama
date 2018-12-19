@@ -465,6 +465,7 @@ def motion_detection_assessment(cap, cam_matrix, video_nb):
 
 def personn_detection_assesment(video_path, video_nb):
     global PERSONN_DETECTION_ALGO
+    global MODEL_PATH
 
     if(video_nb == 1):
         dir_annotation = "Annotation/In/"
@@ -477,7 +478,7 @@ def personn_detection_assesment(video_path, video_nb):
     if(PERSONN_DETECTION_ALGO == "Opencv"):
         perf_ass_opcv(video_path,ann_path)
     elif(PERSONN_DETECTION_ALGO == "Tensorflow"):
-        perf_ass_tf(video_path,ann_path)
+        perf_ass_tf(video_path,ann_path, MODEL_PATH)
     else:
         print("Error : Unknown Personn Detection algorithm")
         exit(-1)

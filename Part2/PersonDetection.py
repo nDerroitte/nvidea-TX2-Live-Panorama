@@ -104,7 +104,7 @@ def perf_ass_opcv(video_path,ann_path):
         img_nb += 1
     return (total_error/(ann_nb+1)), (computation_time/(img_nb+1))
 
-def perf_ass_tf(video_path, ann_path, model_path, threshold):
+def perf_ass_tf(video_path, ann_path, model_path, threshold=0.8):
     """
     Perform the performance assessment of the Tensorflow method
     """
