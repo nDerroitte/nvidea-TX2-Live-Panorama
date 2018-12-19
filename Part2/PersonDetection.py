@@ -145,12 +145,3 @@ def study_params(video_path, ann_path, models, thresholds):
             print("threshold : " + str(threshold))
             print("error : " + str(error))
             print("computation time : " + str(computation_time))
-<<<<<<< HEAD
-
-if __name__ == "__main__":
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    #study_params(VIDEO_PATH,ANN_PATH,MODELS,THRESHOLDS)
-    print(perf_ass_opcv(VIDEO_PATH,ANN_PATH))
-    #print(detect_tf(VIDEO_PATH,ANN_PATH,MODEL_PATH,THRESHOLD))
-=======
->>>>>>> 97c5426d6a5bfd4cb65b3ce5080771ebfb607475
