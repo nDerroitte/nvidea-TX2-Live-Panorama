@@ -32,7 +32,7 @@ class HumanDetectorOCV:
 			The list of boxes constructed around the detected humans
 		"""
 
-		(rect, weights) = self.hog.detectMultiScale(image, winStride=(4, 4), padding=(16, 16), scale=1.09)
+		(rect, weights) = self.hog.detectMultiScale(image, winStride=(4, 4), padding=(8, 8), scale=1.09)
 
 		# non-maxima suppression applied to the boxes
 		rect = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rect])
@@ -49,6 +49,7 @@ class HumanDetectorOCV:
 			p_w, p_h = int(0.1*w), int(0.025*h)
 			#cv2.rectangle(image, (x + p_w, y + p_h), (x + w - p_w, y + h - p_h), (0, 255, 0), thickness)
 
+			#human_boxes.append([(x + p_w, y + p_h), (x + w - p_w, y + h - p_h)])
 			human_boxes.append([(x + p_w, y + p_h), (x + w - p_w, y + h - p_h)])
 
 		# reformat and rearrange the boxes for convenience
