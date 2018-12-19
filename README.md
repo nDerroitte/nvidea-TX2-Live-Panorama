@@ -1,7 +1,11 @@
-*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection)*
+*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection). The installation part have also been updated*
 # Installation and usage of the code
 ## Installation
-After placing the all the code in a folder and openning a terminal on the according folder there is nothing much to do as far as installation is concerned.
+The first step is to install the following package on the Jetson : 
+```sh
+$ pip3 install imutils
+```
+After this installation, one the place  all the code in a folder and openning a terminal on the according folder and there is nothing much to do as far as installation is concerned.
 Let's just note that the Jetson TX2 should be installed as described in the statement and therefore, OpenCV2, numpy, ... should be already installed.
 
 Some part of the code may requiere to boost the performance of the TX2 to run properly/quicker.
