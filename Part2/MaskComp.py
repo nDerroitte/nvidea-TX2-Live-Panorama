@@ -13,7 +13,7 @@ TOL = 5
 ###############################################################################
 def readMask(img_number, folder_name, grpNb, Indoor):
     """
-    From the image number and the parameter to find to corresponding folder, create a cv2 frame 
+    From the image number and the parameter to find to corresponding folder, create a cv2 frame
     """
     img_path = folder_name + "/seg_"+str(grpNb)+"_"+str(Indoor)+"_"+"{0:0=4d}".format(img_number)+".png"
     return cv2.imread(img_path, 0)
@@ -37,7 +37,7 @@ def maskComp(true_mask, generated_mask, tol = False):
             #If the two pixels correspond
             if true_mask[x][y] == generated_mask[x][y]:
                 continue
-             #If they don't
+            #If they don't
             elif true_mask[x][y] and not generated_mask[x][y]:
                 #Handle tolerance
                 if tol and isToleratedNp(generated_mask,x,y):

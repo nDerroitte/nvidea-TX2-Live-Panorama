@@ -210,7 +210,7 @@ def video_motion_detection_demo(cap,cam_matrix):
         print("Error: 0 frame in the video mentionned.")
         exit(-1)
 
-    frame_counter = FRAME_NB_BTW_PANO
+    frame_counter = 50
 
     fgbg = cv2.createBackgroundSubtractorMOG2()
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
@@ -316,7 +316,7 @@ def video_enhanced_panorama(cap,cam_matrix):
             prec_trans = trans
 
             while(len(frame_buffer) > 0):
-                moving_fg_mask = motion_detection(tmp,last_frame_in_pano,PROJECTION_MATRICE)
+                moving_fg_mask = motion_detection(fgbg, kernel, tmp,last_frame_in_pano,PROJECTION_MATRICE)
                 static_fg_mask = compute_foreground_mask(tmp,fgbg,kernel)
                 tmp_panorama, tmp_translation = get_enhanced_panorama("cylindrical",panorama,tmp,last_frame_in_pano,trans,PROJECTION_MATRICE, moving_fg_mask, static_fg_mask)
 
@@ -530,8 +530,49 @@ def live_panorama(cap,cam_matrix):
     cv2.destroyAllWindows()
 
 def live_motion_detection_demo(cap,cam_matrix):
-    print("Live Motion Detection is not implemented.")
-    exit(-1)
+    global FRAME_NB_BTW_PANO
+    global PROJECTION_MATRICE
+
+    ret = False
+    frame = None
+
+    start_live = False
+
+    fgbg = cv2.createBackgroundSubtractorMOG2()
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
+
+    focal_length = cam_matrix[0][0]
+    scaling_factor = focal_length #Scaling Factor equal to focal length
+    PROJECTION_MATRICE = compute_projection_matrix(cam_matrix, scaling_factor, RESOLUTION)
+
+    while(cap.isOpened()):
+        prec_ret, prec_frame = (ret,frame)
+        ret, frame = cap.read()
+
+        if ret is True:
+            frame = cv2.resize(frame, RESOLUTION)
+
+        if prec_ret is True and ret is True and start_live:
+            prec_gray = cv2.cvtColor(prec_frame,cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+
+            motion_mask = motion_detection(fgbg,kernel, prec_gray, gray, PROJECTION_MATRICE, frame)
+
+        if ret is True:
+            open_window("Live")
+            cv2.imshow("Live", frame)
+
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord("q"):
+            print("You quit.")
+            break
+        elif key == ord("s"):
+            start_live = not start_live
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 def live_enhanced_panorama(cap,cam_matrix):
     global PROJECTION_MATRICE
@@ -581,8 +622,8 @@ if __name__ == "__main__":
             exit(-1)
 
         live = True
-        cap = cv2.VideoCapture(0)
-        #cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
+        #cap = cv2.VideoCapture(0)
+        cap = open_cam_onboard(WINDOW_WIDTH, WINDOW_HEIGHT, RESOLUTION,FRAME_RATE)
 
     elif(len(sys.argv) == 4):
         cmatrix_filename = sys.argv[1]

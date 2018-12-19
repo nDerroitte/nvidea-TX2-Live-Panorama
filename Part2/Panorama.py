@@ -195,8 +195,8 @@ def removeAllForeground(frame, moving_fg_mask, static_fg_mask):
     bg_without_move_mask = cv2.bitwise_not(moving_fg_mask)
     bg_mask = cv2.bitwise_not(static_fg_mask)
     bg_mask = cv2.threshold(bg_mask,25,255,cv2.THRESH_BINARY)[1]
-    tmp = cv2.bitwise_and(frame,bg_mask)
-    #tmp = cv2.bitwise_and(tmp,bg_without_move_mask)
+    #tmp = cv2.bitwise_and(frame,bg_mask)
+    tmp = cv2.bitwise_and(frame,bg_without_move_mask)
     return cv2.fastNlMeansDenoising(tmp)
 
 def EnhancedCylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix, moving_fg_mask, static_fg_mask):
