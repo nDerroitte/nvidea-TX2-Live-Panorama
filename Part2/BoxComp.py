@@ -190,12 +190,12 @@ def outsideError(true_rect, generated_rect):
 
 def boxComp(boxes, img_nb, grp_nb, video_seq, path):
     """
-    Algo called when trying to assess the performance. 
+    Algo called when trying to assess the performance.
     First step : create a text file containing the boxes formatted as said in the statement
     Second step: error computation
     Third step: delete the temp file created.
     """
-    writeInFile( boxes,"img_{}_{}".format(grp_nb,video_seq)+"_{0:0=4d}.jpg".format(img_nb))
+    writeInFile( path, boxes,"img_{}_{}".format(grp_nb,video_seq)+"_{0:0=4d}.jpg".format(img_nb))
     e = evaluateError(img_nb, path, grp_nb, video_seq)
     os.remove(path+"generatedbox_img_{}_{}".format(grp_nb,video_seq)+"_{0:0=4d}.txt".format(img_nb))
     return e

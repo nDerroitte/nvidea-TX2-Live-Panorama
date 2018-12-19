@@ -3,12 +3,16 @@ from HumanDetectorOCV import HumanDetectorOCV
 from BoxComp import *
 import os, sys, time
 
-VIDEO_PATH = "Capture/Video_1_2018-12-03_14_42_52/"
-ANN_PATH = "Annotation/In/box_6_1.txt"
+#VIDEO_PATH = "Capture/Video_1_2018-12-03_14_42_52/"
+VIDEO_PATH = "Capture/Video_2_2018-11-20_15_21_03/"
+#ANN_PATH = "Annotation/In/box_6_1.txt"
+ANN_PATH = "Annotation/Out/box_6_2.txt"
 
 GRP_NB = 6
-VIDEO_SEQ = 1
-ANN_FOLDER = "Annotation/In/"
+#VIDEO_SEQ = 1
+VIDEO_SEQ = 2
+#ANN_FOLDER = "Annotation/In/"
+ANN_FOLDER = "Annotation/Out/"
 
 THRESHOLD = 0.8
 MODEL_PATH = "models/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb"
@@ -145,3 +149,6 @@ def study_params(video_path, ann_path, models, thresholds):
             print("threshold : " + str(threshold))
             print("error : " + str(error))
             print("computation time : " + str(computation_time))
+
+#detect_tf("Capture/Video_2_2018-11-20_15_21_03/","models/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb")
+#print(perf_ass_tf(VIDEO_PATH,ANN_PATH,"models/faster_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"))

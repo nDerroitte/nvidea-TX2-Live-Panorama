@@ -30,9 +30,9 @@ def me(error_list):
     sum /= len(error_list)
     return sum
 
-def writeInFile(boxes, img_name):
+def writeInFile(path, boxes, img_name):
     img_name_file = img_name[:-4]
-    file_name = "Annotation/In/generatedbox_"+str(img_name_file)+".txt"
+    file_name = path+"generatedbox_"+str(img_name_file)+".txt"
     file = open(file_name,"w")
     for box in boxes:
         width = box[1][0]- box[0][0]
