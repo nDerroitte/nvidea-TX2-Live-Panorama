@@ -765,7 +765,7 @@ if __name__ == "__main__":
     elif(live is False and mode == "personn_detection" and perf_assess == False):
         video_personn_detection(video_dirname)
 
-    elif(live is False and mode == "personn_detection" and perf_assess == False):
+    elif(live is False and mode == "personn_detection" and perf_assess == True):
         personn_detection_assesment(video_dirname, video_nb)
 
     elif(live is True and mode == "personn_detection"):
