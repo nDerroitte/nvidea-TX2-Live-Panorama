@@ -476,13 +476,20 @@ def personn_detection_assesment(video_path, video_nb):
 
 
     if(PERSONN_DETECTION_ALGO == "Opencv"):
-        perf_ass_opcv(video_path,ann_path)
+        mean_error, computation_time = perf_ass_opcv(video_path,ann_path)
     elif(PERSONN_DETECTION_ALGO == "Tensorflow"):
+<<<<<<< HEAD
         print("Assessment of the model ...")
         perf_ass_tf(video_path,ann_path, MODEL_PATH)
+=======
+        mean_error, computation_time = perf_ass_tf(video_path,ann_path, MODEL_PATH)
+>>>>>>> 61ec1a4b6dde949f5ff88c27b6fe145f9b5d792c
     else:
         print("Error : Unknown Personn Detection algorithm")
         exit(-1)
+
+    print("Mean Error :" + str(mean_error))
+    print("Computation time : " + str(computation_time))
 
 def live_matching_demo(cap,cam_matrix):
     global FRAME_NB_BTW_PANO

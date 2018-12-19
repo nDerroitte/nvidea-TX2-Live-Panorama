@@ -48,7 +48,7 @@ def evaluateError(img_nb, path, grp_nb, video_seq,draw= False):
     for i in range(abs(len(true_rects)-len(generated_rects))):
         error.append(100)
     total_error = me(error)
-    #print("Total error on image {}: {}".format(img_nb,total_error))
+    print("Total error on image {}: {}".format(img_nb,total_error))
     #display mode
     if draw :
         cv2.imshow("Compare",frame)
