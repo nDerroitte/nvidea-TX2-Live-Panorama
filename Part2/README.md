@@ -1,3 +1,4 @@
+*Rem : the instructions concerning the second part of the project can be found at the end of this file (from Motion detection)*
 # Installation and usage of the code
 ## Installation
 After placing the all the code in a folder and openning a terminal on the according folder there is nothing much to do as far as installation is concerned.
@@ -54,9 +55,72 @@ python3 main.py CAMERA_MATRIX.json {panorama, matching_demo} [FOLDER PATH]
     * `r` Restart display.
     * `q` Quit.
 * `FOLDER_PATH`: Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
-  * While using the panorama feature in live mode, the user should press `s`to start the panorama and repress `s`. He can also press `q` to quit at anytime.
-  * While using the matching_demo feature in live, the user can only press `s` to show the features and repress it the remove them.  He can also press `q` to quit at anytime. 
+  * While using the panorama feature in live mode, the user should press `s`to start the panorama and repress `s`. It can also press `q` to quit at anytime.
+  * While using the matching_demo feature in live, the user input does not change from the non-live mode.
 
 Note that only the 2 first arguments are mandatory. Not giving a 3rd argument puts the algortihm in live mode. 
+
+The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
+
+### Motion detection 
+
+In order to access the motion detection, one can use the following code : 
+```sh
+python3 main.py motion_detection [FOLDER PATH, PERFORMANCE ASSESSMENT]
+```
+* `FOLDER_PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
+* `PERFORCEMENT ASSESSMENT`: If specify (with the value True), enable the perforcement assessment of the motion detection module. Will print the mean error of all erros made by the module (See report for detail about these errors). An  **Annotation/{In, Out}/** folder containing the reference masks and the box text file should be present in the current folder.
+If not specify : the output is the sequence where the object in motion are framed with a red rectangles.
+
+Note that if run in live (not filling the `FOLDER PATH` argument), the code can not be used to performe assessment. Nevertheless, if run on a pre-defined sequence (by filing `FOLDER PATH`), the `PERFORCEMENT ASSESSMENT`parameter can be set to True or False. As explained previously, the output will depend on this parameter.
+
+If run in live the user can use the following inputs : 
+* `s` : start the motion detection
+* `q`: quit
+
+If run from existing sequences : 
+* `p` Pause/Unpause the stream.
+* `r` Restart display.
+* `q` Quit.
+
+The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
+### Person detection
+To run the person detection module, one should use the following line : 
+```sh
+python3 main.py person_detection [FOLDER PATH, PERFORMANCE ASSESSMENT]
+```
+The arguments work exactly as for the Motion detection module : 
+* `FOLDER_PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
+* `PERFORCEMENT ASSESSMENT`: If specify (with the value True), enable the perforcement assessment of the person detection module. Will print the mean error of all erros made by the module (See report for detail about these errors). An  **Annotation/{In, Out}/** folder containing the reference masks and the box text file should be present in the current folder.
+If not specify : the output is the sequence where the humain are framed with a red rectangles.
+
+Note that if run in live (not filling the `FOLDER PATH` argument), the code can not be used to performe assessment. Nevertheless, if run on a pre-defined sequence (by filing `FOLDER PATH`), the `PERFORCEMENT ASSESSMENT`parameter can be set to True or False. As explained previously, the output will depend on this parameter.
+
+If run in live the user can use the following inputs : 
+* `s` : start the motion detection
+* `q`: quit
+
+If run from existing sequences : 
+* `p` Pause/Unpause the stream.
+* `r` Restart display.
+* `q` Quit.
+
+The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
+### Enhanced panoramic image
+To create the enhanced panoramic image, where the moving objects have been removed, the following command should be use : 
+```sh
+python3 main.py enhanced_panorama [FOLDER PATH]
+```
+The output panorama registers itself in **./enhanced_panorama.jgp**. 
+* `FOLDER PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
+
+If run in live the user can use the following inputs : 
+* `s` : start the motion detection
+* `q`: quit
+
+If run from existing sequences : 
+* `p` Pause/Unpause the stream.
+* `r` Restart display.
+* `q` Quit.
 
 The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
