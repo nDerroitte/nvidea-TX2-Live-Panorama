@@ -35,17 +35,16 @@ def motion_detection(fgbg,kernel, prec_gray, gray,proj_matrix, to_disp=None):
     #curr = cv2.Canny(curr,95,190)
 
     # Compute Difference between two consecutive frame and take the elements appearing on the current frame
-    '''frame_delta = cv2.subtract(prec,curr)
+    frame_delta = cv2.subtract(prec,curr)
     tmp = cv2.absdiff(curr, prec)
 
     frame_delta = cv2.subtract(tmp,frame_delta)
     frame_delta = cv2.bitwise_and(frame_delta, curr)
-    ret,thresh = cv2.threshold(frame_delta,200,255,cv2.THRESH_OTSU)'''
 
     # combine frame and the image difference
-    tmp = cv2.absdiff(curr, prec)
+    '''tmp = cv2.absdiff(curr, prec)
     frame_delta = cv2.addWeighted(prec_gray,0.9,tmp,0.1,0)
-    frame_delta2 = cv2.addWeighted(gray,0.9,tmp,0.1,0)
+    frame_delta2 = cv2.addWeighted(gray,0.9,tmp,0.1,0)'''
 
     open_window("frame_delta")
     cv2.imshow('frame_delta',frame_delta)
