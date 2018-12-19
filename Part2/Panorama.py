@@ -4,6 +4,11 @@ import numpy as np
 from Transformation import *
 
 RESOLUTION = (1280,720)
+
+BLENDING = "No Blending"
+#BLENDING = "Alpha Blending"
+#BLENDING = "Laplacian Blending"
+
 ###############################################################################
 #                                  Fonctions                                  #
 ###############################################################################
@@ -144,8 +149,26 @@ def cylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix):
 
             output = np.zeros_like(cyl_warp)
 
-            output[a] = img1[a]
-            output[b] = cyl_warp[b]
+            if(BLENDING == "No Blending"):
+                output[a] = img1[a]
+                output[b] = cyl_warp[b]
+            elif(BLENDING == "Alpha Blending"):
+                output[a] = img1[a]
+                output[b] = cv2.addWeighted(output[b],0.3,cyl_warp[b],0.7,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                output[b] = cyl_warp[b]
+                m = np.zeros_like(cyl_warp, dtype='float32')#from here 3
+                m[a] = 1
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(cyl_warp,output,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
+
         elif(transfo[0][2] < 0 and total > 0):
             transfo[0][2] = total
             cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
@@ -155,8 +178,25 @@ def cylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix):
 
             output = np.zeros_like(cyl_warp)
 
-            output[a] = img1[a]
-            output[b] = cyl_warp[b]
+            if(BLENDING == "No Blending"):
+                output[a] = img1[a]
+                output[b] = cyl_warp[b]
+            elif(BLENDING == "Alpha Blending"):
+                output[a] = img1[a]
+                output[b] = cv2.addWeighted(output[b],0.7,cyl_warp[b],0.3,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                output[b] = cyl_warp[b]
+                m = np.zeros_like(cyl_warp, dtype='float32')#from here 3
+                m[a] = 1
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(cyl_warp,output,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
 
         elif(transfo[0][2] > 0 and total < 0):
             transfo[0][2] = img1.shape[1]- RESOLUTION[0] - abs(total)
@@ -169,7 +209,24 @@ def cylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix):
             output = np.zeros_like(cyl_warp)
 
             output[a] = img1[a]
-            output[b] = cyl_warp[b]
+
+            if(BLENDING == "No Blending"):
+                output[b] = cyl_warp[b]
+            elif(BLENDING == "Alpha Blending"):
+                output[b] = cv2.addWeighted(output[b],0.7,cyl_warp[b],0.3,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                m = np.zeros_like(cyl_warp, dtype='float32') #from he 3
+                m[b] = 1
+
+                if(cyl_warp.shape[1]%2 !=0):
+                     output=np.insert(output,0,0,axis=1)
+                     cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                     m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(cyl_warp,output,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
 
         else:
             transfo[0][2] = abs(transfo[0][2])
@@ -181,12 +238,30 @@ def cylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix):
 
             output = np.zeros_like(cyl_warp)
 
-            output[b] = cyl_warp[b]
-            output[a] = warp2[a]
+            if(BLENDING == "No Blending"):
+                output[b] = cyl_warp[b]
+                output[a] = warp2[a]
+            elif(BLENDING == "Alpha Blending"):
+                output[b] = cyl_warp[b]
+                output[a] = cv2.addWeighted(cyl_warp[a],0.7,warp2[a],0.3,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                output[a] = warp2[a]
+                m = np.zeros_like(cyl_warp, dtype='float32') # from here 3
+                m[a] = 1
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
 
+                output = laplacianBlending(output,cyl_warp,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
 
-        #output = cv2.fastNlMeansDenoising(output)
-        return autocrop(output), total
+        if(BLENDING == "No Blending"):
+            output = autocrop(output)
+
+        return output, total
     else:
         print("Error : No Affine Transformation was found between both images.")
         return img1, None
@@ -203,8 +278,6 @@ def EnhancedCylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix, m
     global RESOLUTION
 
     tmp = removeAllForeground(img2,moving_fg_mask, static_fg_mask)
-    open_window("Without Back")
-    cv2.imshow("Without Back", tmp)
 
     """
     Function in charge of stiching the cylindrical image together
@@ -240,8 +313,26 @@ def EnhancedCylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix, m
 
             output = np.zeros_like(cyl_warp)
 
-            output[a] = img1[a]
-            output[b] = cyl_warp[b]
+            if(BLENDING == "No Blending"):
+                output[a] = img1[a]
+                output[b] = cyl_warp[b]
+            elif(BLENDING == "Alpha Blending"):
+                output[a] = img1[a]
+                output[b] = cv2.addWeighted(output[b],0.3,cyl_warp[b],0.7,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                output[b] = cyl_warp[b]
+                m = np.zeros_like(cyl_warp, dtype='float32')#from here 3
+                m[a] = 1
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(cyl_warp,output,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
+
         elif(transfo[0][2] < 0 and total > 0):
             transfo[0][2] = total
             cyl_warp = cv2.warpAffine(warp2, transfo, (img1.shape[1] + abs(int(transfo[0][2])),img1.shape[0]))
@@ -251,8 +342,25 @@ def EnhancedCylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix, m
 
             output = np.zeros_like(cyl_warp)
 
-            output[a] = img1[a]
-            output[b] = cyl_warp[b]
+            if(BLENDING == "No Blending"):
+                output[a] = img1[a]
+                output[b] = cyl_warp[b]
+            elif(BLENDING == "Alpha Blending"):
+                output[a] = img1[a]
+                output[b] = cv2.addWeighted(output[b],0.7,cyl_warp[b],0.3,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                output[b] = cyl_warp[b]
+                m = np.zeros_like(cyl_warp, dtype='float32')#from here 3
+                m[a] = 1
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(cyl_warp,output,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
 
         elif(transfo[0][2] > 0 and total < 0):
             transfo[0][2] = img1.shape[1]- RESOLUTION[0] - abs(total)
@@ -265,7 +373,24 @@ def EnhancedCylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix, m
             output = np.zeros_like(cyl_warp)
 
             output[a] = img1[a]
-            output[b] = cyl_warp[b]
+
+            if(BLENDING == "No Blending"):
+                output[b] = cyl_warp[b]
+            elif(BLENDING == "Alpha Blending"):
+                output[b] = cv2.addWeighted(output[b],0.7,cyl_warp[b],0.3,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                m = np.zeros_like(cyl_warp, dtype='float32') #from he 3
+                m[b] = 1
+
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(cyl_warp,output,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
 
         else:
             transfo[0][2] = abs(transfo[0][2])
@@ -277,12 +402,31 @@ def EnhancedCylindricalWarpImages(img1,img2,img3,prec_trans,projection_matrix, m
 
             output = np.zeros_like(cyl_warp)
 
-            output[b] = cyl_warp[b]
-            output[a] = warp2[a]
+            if(BLENDING == "No Blending"):
+                output[b] = cyl_warp[b]
+                output[a] = warp2[a]
+            elif(BLENDING == "Alpha Blending"):
+                output[b] = cyl_warp[b]
+                output[a] = cv2.addWeighted(cyl_warp[a],0.7,warp2[a],0.3,0).squeeze()
+            elif(BLENDING == "Laplacian Blending"):
+                output[a] = warp2[a]
+                m = np.zeros_like(cyl_warp, dtype='float32') # from here 3
+                m[a] = 1
+                if(cyl_warp.shape[1]%2 !=0):
+                    output=np.insert(output,0,0,axis=1)
+                    cyl_warp=np.insert(cyl_warp,0,0,axis=1)
+                    m=np.insert(m,0,0,axis=1)
+
+                output = laplacianBlending(output,cyl_warp,m,2)
+            else:
+                print("Error : Unknown Blending Methods.")
+                exit(-1)
+
+        if(BLENDING == "No Blending"):
+            output = autocrop(output)
 
 
-        #output = cv2.fastNlMeansDenoising(output)
-        return autocrop(output), total
+        return output, total
     else:
         print("Error : No Affine Transformation was found between both images.")
         return img1, None
@@ -364,3 +508,46 @@ def compute_foreground_mask(frame, fgbg,kernel):
             cv2.fillPoly(mask, pts =[np.array(cnts[i])], color=(255,255,255))
             #cv2.drawContours(mask, cnts, i, 255, 3)
     return mask
+
+def laplacianBlending(img1,img2,mask,nb_lvl=6):
+    levelBlending = []
+    #First the Gaussian pyramid to downsample the images
+    GaussOfImg1 = img1.copy()
+    GaussOfImg2 = img2.copy()
+    GaussOfMask = mask.copy()
+    GaussPyImg1=[GaussOfImg1]
+    GaussPyImg2=[GaussOfImg2]
+    GaussPyMask=[GaussOfMask]
+
+    for i in range(nb_lvl):
+        GaussOfImg1=cv2.pyrDown(GaussOfImg1)
+        GaussOfImg2=cv2.pyrDown(GaussOfImg2)
+        GaussOfMask=cv2.pyrDown(GaussOfMask)
+        GaussPyImg1.append(np.float32(GaussOfImg1))
+        GaussPyImg2.append(np.float32(GaussOfImg2))
+        GaussPyMask.append(np.float32(GaussOfMask))
+
+    #Then the Laplacian pyramid to reconstruct
+    LaplacePyImg1=[GaussPyImg1[nb_lvl-1]]
+    LaplacePyImg2=[GaussPyImg2[nb_lvl-1]]
+    reverseGaussPyMask=[GaussPyMask[nb_lvl-1]]
+
+    for i in range(nb_lvl-1,0,-1):
+        LaplaceOfimg1=np.subtract(GaussPyImg1[i-1], cv2.pyrUp(GaussPyImg1[i]))
+        LaplaceOfimg2=np.subtract(GaussPyImg2[i-1], cv2.pyrUp(GaussPyImg2[i]))
+        LaplacePyImg1.append(LaplaceOfimg1)
+        LaplacePyImg2.append(LaplaceOfimg2)
+        reverseGaussPyMask.append(GaussPyMask[i-1])
+
+    #Blending in each level
+    for lapIm1,lapIm2,gauMask in zip(LaplacePyImg1,LaplacePyImg2,reverseGaussPyMask):
+        blendByLvl= lapIm1*gauMask + lapIm2*(np.float32(1)-gauMask)
+        levelBlending.append(blendByLvl)
+
+    #Reconstruction
+    finalBlending=levelBlending[0]
+    for i in range(1,nb_lvl):
+        finalBlending=cv2.pyrUp(finalBlending)
+        finalBlending=cv2.add(finalBlending,levelBlending[i])
+
+    return finalBlending

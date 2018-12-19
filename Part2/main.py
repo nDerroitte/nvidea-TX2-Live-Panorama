@@ -16,7 +16,7 @@ from PersonDetection import *
 
 PROJECTION_MATRICE = None
 IMPLEMENTED_MODE = ["panorama", "matching_demo", "motion_detection", "enhanced_panorama", "personn_detection"]
-FRAME_NB_BTW_PANO = 20
+FRAME_NB_BTW_PANO = 15
 RESOLUTION = (1280,720)
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -185,7 +185,7 @@ def video_panorama(cap,cam_matrix):
 
     if panorama is not None:
         panorama = cv2.cvtColor(panorama, cv2.COLOR_GRAY2BGR)
-        ret = cv2.imwrite(("Panorama.jpg") ,panorama)
+        ret = cv2.imwrite(("Panorama.jpg") ,autocrop(panorama))
         if ret is False:
             print("Error: Fail to save the Panorama.")
         else:
@@ -216,7 +216,7 @@ def video_motion_detection_demo(cap,cam_matrix):
         print("Error: 0 frame in the video mentionned.")
         exit(-1)
 
-    frame_counter = 50
+    frame_counter = FRAME_NB_BTW_PANO
 
     fgbg = cv2.createBackgroundSubtractorMOG2()
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
@@ -244,11 +244,6 @@ def video_motion_detection_demo(cap,cam_matrix):
 
         open_window("frame")
         cv2.imshow('frame',to_disp)
-
-        if(motion_mask is not None):
-            open_window("Motion Mask")
-            cv2.imshow('Motion Mask',motion_mask)
-
 
         key = cv2.waitKey(1) & 0xFF
 
@@ -384,7 +379,7 @@ def video_enhanced_panorama(cap,cam_matrix):
 
     if panorama is not None:
         panorama = cv2.cvtColor(panorama, cv2.COLOR_GRAY2BGR)
-        ret = cv2.imwrite(("Panorama.jpg") ,panorama)
+        ret = cv2.imwrite(("Panorama.jpg") ,autocrop(panorama))
         if ret is False:
             print("Error: Fail to save the Panorama.")
         else:

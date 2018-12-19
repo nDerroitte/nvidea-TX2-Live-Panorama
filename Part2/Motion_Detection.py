@@ -6,8 +6,11 @@ from Feature import *
 
 RESOLUTION = (1280,720)
 
-
 def motion_detection(fgbg,kernel, prec_gray, gray,proj_matrix, to_disp=None):
+    '''
+    This function will detect motion betwen two consecutive frames and will return the corresponding
+    mask
+    '''
     # Get the overlapping part of both consecutive frame (only common part is relevant for motion detection)
     overlap1, overlap2 = get_overlapping_parts(prec_gray, gray, proj_matrix)
 
@@ -19,47 +22,46 @@ def motion_detection(fgbg,kernel, prec_gray, gray,proj_matrix, to_disp=None):
     prec = cv2.GaussianBlur(overlap1,(21, 21),0)
     curr = cv2.GaussianBlur(overlap2,(21, 21),0)
 
-    #prec = fgbg.apply(prec)
-    #prec = cv2.morphologyEx(prec, cv2.MORPH_OPEN, kernel)
+    #Extract Foreground Mask
+    static_fg_mask = fgbg.apply(prec)
+    static_fg_mask = cv2.morphologyEx(static_fg_mask, cv2.MORPH_OPEN, kernel)
 
-    #curr = fgbg.apply(curr)
-    #curr = cv2.morphologyEx(curr, cv2.MORPH_OPEN, kernel)
+    #Extract Background Mask
+    stat_bg_mask = cv2.bitwise_not(static_fg_mask)
+    stat_bg_mask = cv2.threshold(stat_bg_mask,25,255,cv2.THRESH_BINARY)[1]
 
-    #prec = cv2.adaptiveThreshold(prec,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
-    #curr = cv2.adaptiveThreshold(curr,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+    #Extract Background
+    stat_bg = cv2.bitwise_and(prec,stat_bg_mask)
 
-    #ret3,prec = cv2.threshold(prec,25,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    #ret3,curr = cv2.threshold(curr,25,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    #Extract Foreground Mask
+    moving_fg_mask = fgbg.apply(curr)
+    moving_fg_mask = cv2.morphologyEx(static_fg_mask, cv2.MORPH_OPEN, kernel)
 
-    #prec = cv2.Canny(prec,95,190)
-    #curr = cv2.Canny(curr,95,190)
+    #Extract Background Mask
+    mov_bg_mask = cv2.bitwise_not(static_fg_mask)
+    mov_bg_mask = cv2.threshold(mov_bg_mask,25,255,cv2.THRESH_BINARY)[1]
+
+    #Extract Background
+    mov_bg = cv2.bitwise_and(curr,mov_bg_mask)
 
     # Compute Difference between two consecutive frame and take the elements appearing on the current frame
-    frame_delta = cv2.subtract(prec,curr)
-    tmp = cv2.absdiff(curr, prec)
+    frame_delta = cv2.absdiff(mov_bg, stat_bg)
+    frame_delta = cv2.bitwise_and(frame_delta,curr)
 
-    frame_delta = cv2.subtract(tmp,frame_delta)
-    frame_delta = cv2.bitwise_and(frame_delta, curr)
+    return mask_motion_detection(frame_delta,to_disp)
 
-    # combine frame and the image difference
-    '''tmp = cv2.absdiff(curr, prec)
-    frame_delta = cv2.addWeighted(prec_gray,0.9,tmp,0.1,0)
-    frame_delta2 = cv2.addWeighted(gray,0.9,tmp,0.1,0)'''
-
-    open_window("frame_delta")
-    cv2.imshow('frame_delta',frame_delta)
-
-    return mask_motion_detection(fgbg,kernel,frame_delta,to_disp)
-
-def mask_motion_detection(fgbg,kernel,frame,to_disp):
+def mask_motion_detection(frame,to_disp):
+    """
+    This function  will return the mask corresponding to the mask representing the motion
+    :param frame:
+    :param to_disp:
+    :return:
+    """
     #Create a threshold to exclude minute movements
     thresh = cv2.threshold(frame,40,255,cv2.THRESH_BINARY)[1]
 
     #Dialate threshold to further reduce error
     thresh = cv2.dilate(thresh,None,iterations=2)
-
-    open_window("Detection Frame")
-    cv2.imshow("Detection Frame",thresh)
 
     mask = np.zeros_like(thresh)
 
@@ -71,7 +73,7 @@ def mask_motion_detection(fgbg,kernel,frame,to_disp):
 
     # For each contour
     for i in range(len(cnts)):
-        # If the contour is big enough (and dense enough to represent an object).
+        # If the contour is big enough.
         if cv2.contourArea(cnts[i]) > 1000:
             # Create a bounding box for our contour
             (x,y,w,h) = cv2.boundingRect(cnts[i])
