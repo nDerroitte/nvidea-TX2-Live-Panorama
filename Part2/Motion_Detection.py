@@ -53,9 +53,6 @@ def motion_detection(fgbg,kernel, prec_gray, gray,proj_matrix, to_disp=None):
 def mask_motion_detection(frame,to_disp):
     """
     This function  will return the mask corresponding to the mask representing the motion
-    :param frame:
-    :param to_disp:
-    :return:
     """
     #Create a threshold to exclude minute movements
     thresh = cv2.threshold(frame,40,255,cv2.THRESH_BINARY)[1]
