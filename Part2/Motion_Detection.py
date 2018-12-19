@@ -44,10 +44,8 @@ def motion_detection(fgbg,kernel, prec_gray, gray,proj_matrix, to_disp=None):
 
     # combine frame and the image difference
     tmp = cv2.absdiff(curr, prec)
-    frame_delta1 = cv2.addWeighted(prec_gray,0.9,tmp,0.1,0)
+    frame_delta = cv2.addWeighted(prec_gray,0.9,tmp,0.1,0)
     frame_delta2 = cv2.addWeighted(gray,0.9,tmp,0.1,0)
-
-
 
     open_window("frame_delta")
     cv2.imshow('frame_delta',frame_delta)
@@ -94,59 +92,3 @@ def mask_motion_detection(fgbg,kernel,frame,to_disp):
                     cv2.rectangle(to_disp,p1,p2,(0,0,255),5)
 
     return mask
-
-def bad_motion_detection(fgbg, frame,to_disp):
-    #apply background substraction
-    fgmask = fgbg.apply(frame)
-
-    #Create a threshold to exclude minute movements
-    thresh = cv2.threshold(fgmask,30,255,cv2.THRESH_BINARY)[1]
-
-    #Dialate threshold to further reduce error
-    thresh = cv2.dilate(thresh,None,iterations=2)
-
-    #Check for contours in our threshold
-    _,cnts,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
-    # For each contour
-    for i in range(len(cnts)):
-        # If the contour is big enough
-        if cv2.contourArea(cnts[i]) > 1000:
-            # Create a bounding box for our contour
-            (x,y,w,h) = cv2.boundingRect(cnts[i])
-            # Convert from float to int, and scale up our boudning box
-            (x,y,w,h) = (int(x),int(y),int(w),int(h))
-            # Initialize tracker
-            bbox = (x,y,w,h)
-
-            p1 = (int(bbox[0]), int(bbox[1]))
-            p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
-            cv2.rectangle(to_disp,p1,p2,(0,0,255),5)
-
-    return fgmask
-
-def get_mask(matches,key_points1,key_points2):
-    # Minimum number of matching
-    MIN_MATCH = 10
-    # Parameter to stop computing. Terminaison condition
-    MAX_RANSAC_REPROJ_ERROR = 5.0
-
-    if len(matches)>= MIN_MATCH:
-        src_pts = list()
-        dst_pts = list()
-
-        for m in matches:
-            src_pts.append(key_points1[m.queryIdx].pt)
-            dst_pts.append(key_points2[m.trainIdx].pt)
-
-        src_pts = np.float32([src_pts]).reshape(-1,1,2)
-        dst_pts = np.float32([dst_pts]).reshape(-1,1,2)
-
-
-        #Creating the homography matrix
-        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,MAX_RANSAC_REPROJ_ERROR)
-
-        return mask
-    else:
-        print("Not enough matches are found : " + str(len(matches)) + " < " + str(MIN_MATCH) + ".")
-        return None
