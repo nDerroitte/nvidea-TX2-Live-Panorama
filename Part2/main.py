@@ -478,6 +478,7 @@ def personn_detection_assesment(video_path, video_nb):
     if(PERSONN_DETECTION_ALGO == "Opencv"):
         perf_ass_opcv(video_path,ann_path)
     elif(PERSONN_DETECTION_ALGO == "Tensorflow"):
+        print("Assessment of the model ...")
         perf_ass_tf(video_path,ann_path, MODEL_PATH)
     else:
         print("Error : Unknown Personn Detection algorithm")
