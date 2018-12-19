@@ -50,12 +50,11 @@ def person_detection(algo, img, detector, p_a=False, img_nb=None
     else:
         return detection_time
 
-def detect_opcv(video_path,ann_path):
+def detect_opcv(video_path):
     """
     Perform the person detection using the OpenCV method
     """
     files = sorted(os.listdir(video_path))
-    ref_img = getRefId(ann_path)
     detector = HumanDetectorOCV()
 
     for file_name in files:
@@ -64,12 +63,11 @@ def detect_opcv(video_path,ann_path):
             if image is not None:
                 person_detection("opencv",image,detector)
 
-def detect_tf(video_path,ann_path,model_path,threshold):
+def detect_tf(video_path,model_path,threshold=0.8):
     """
     Perform the person detection using the Tensorflow method
     """
     files = sorted(os.listdir(video_path))
-    ref_img = getRefId(ann_path)
     detector = HumanDetectorTF(model_path)
 
     for file_name in files:
@@ -147,9 +145,12 @@ def study_params(video_path, ann_path, models, thresholds):
             print("threshold : " + str(threshold))
             print("error : " + str(error))
             print("computation time : " + str(computation_time))
+<<<<<<< HEAD
 
 if __name__ == "__main__":
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     #study_params(VIDEO_PATH,ANN_PATH,MODELS,THRESHOLDS)
     print(perf_ass_opcv(VIDEO_PATH,ANN_PATH))
     #print(detect_tf(VIDEO_PATH,ANN_PATH,MODEL_PATH,THRESHOLD))
+=======
+>>>>>>> 97c5426d6a5bfd4cb65b3ce5080771ebfb607475
