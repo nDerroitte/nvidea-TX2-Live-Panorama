@@ -29,7 +29,7 @@ where  '[LABEL] [REF]'' are 2 inputs to specify as :
 * Ref :  boolean : True if the sequence is a reference one (without moving object) and False otherwise
 
 Once the window is opened, the user can use the following key to perform the corresponding actions : 
-*  `p` : Capture a single image in Capture/current\_date 
+* `p` : Capture a single image in Capture/current\_date 
 * `d` : Record a 500 frames sequence in Capture/current\_date 
 * `v` : Record a 1500 frames sequence in Capture/current\_date 
 * `q` : Close the windows
@@ -54,9 +54,9 @@ python3 main.py CAMERA_MATRIX.json {panorama, matching_demo} [FOLDER PATH]
 * `{panorama, matching_demo}`: Specify one of the possible arguments:
   * ``panorama`` should be use to create a panorama. The output panorama register itself 
   * `matching_demo` should be use to see how the matching of feature take place. Does not create any results and only help for better understanding option. The following inputs can be used in this case :
-    * `p` Pause/Unpause the stream.
-    * `r` Restart display.
-    * `q` Quit.
+    * `p`: Pause/Unpause the stream.
+    * `r`: Restart display.
+    * `q`: quit
 * `FOLDER_PATH`: Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
   * While using the panorama feature in live mode, the user should press `s`to start the panorama and repress `s`. It can also press `q` to quit at anytime.
   * While using the matching_demo feature in live, the user input does not change from the non-live mode.
@@ -83,9 +83,9 @@ If run in live the user can use the following inputs :
 * `q`: quit
 
 If run from existing sequences : 
-* `p` Pause/Unpause the stream.
-* `r` Restart display.
-* `q` Quit.
+* `p`: Pause/Unpause the stream.
+* `r`: Restart display.
+* `q`: quit
 
 The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
 ### Person detection
@@ -102,13 +102,13 @@ If not specify : the output is the sequence where the humain are framed with a r
 Note that if run in live (not filling the `FOLDER PATH` argument), the code can not be used to performe assessment. Nevertheless, if run on a pre-defined sequence (by filing `FOLDER PATH`), the `PERFORCEMENT ASSESSMENT`parameter can be set to True or False. As explained previously, the output will depend on this parameter.
 
 If run in live the user can use the following inputs : 
-* `s` : start the motion detection
+* `s`: start the motion detection
 * `q`: quit
 
 If run from existing sequences : 
-* `p` Pause/Unpause the stream.
-* `r` Restart display.
-* `q` Quit.
+* `p`: Pause/Unpause the stream.
+* `r`: Restart display.
+* `q`: quit
 
 The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
 ### Enhanced panoramic image
@@ -121,12 +121,12 @@ The output panorama registers itself in **./enhanced_panorama.jgp**.
 * `FOLDER PATH` : Path of the folder containing the sequence to consider. If the argument is not filled, the algorithm runs in live mode.
 
 If run in live the user can use the following inputs : 
-* `s` : start the motion detection
+* `s`: start the motion detection
 * `q`: quit
 
 If run from existing sequences : 
-* `p` Pause/Unpause the stream.
-* `r` Restart display.
-* `q` Quit.
+* `p`: Pause/Unpause the stream.
+* `r`: Restart display.
+* `q`: quit
 
 The Jetson TX2 boosting can be use in order to increase the performance of the algorithm but is not mandatory.
