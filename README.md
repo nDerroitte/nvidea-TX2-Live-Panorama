@@ -1,4 +1,12 @@
 # Installation and usage of the code
+## About
+This project was made as part of a course of the University of Liege.
+
+The code was designed in two parts. 
+The goal of the first part was to make a panorama from a video stream. This last can be inputed or taken live.
+In the second part, we added a motion and person detection module.
+
+To run the last version of the project, one should thus use the Part2 folder of this repository.
 ## Installation
 The first step is to install the following package on the Jetson : 
 ```sh
